@@ -83,33 +83,33 @@ class _JudgeScanState extends State<JudgeScan> {
                     'Participant Details',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 7),
                   Text(
                     'Participant Name: $participantName',
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 1),
                   Text(
                     'Participant ID: $participantID',
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 1),
                   Text(
                     'Round Name: Round 1',
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 1),
                   Text(
                     'Attempts:',
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 1),
                   Row(
                     children: [
                       Text('Attempt 1'),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(Icons.timer, size: 40), // Increase icon size
@@ -186,8 +186,8 @@ class _JudgeScanState extends State<JudgeScan> {
                           Align(
                             alignment: Alignment.center,
                             child: Container(
-                              width: 200,
-                              height: 200,
+                              width: 180,
+                              height: 180,
                               decoration: BoxDecoration(
                                 border: Border.all(
                                   color: Colors.red,
@@ -202,7 +202,7 @@ class _JudgeScanState extends State<JudgeScan> {
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 _showConfirmationDialog();

@@ -126,6 +126,18 @@ class _ResultScreenState extends State<ResultScreen> {
                     ],
                   ),
                   SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          showExportDBDialog(context); // Show the export dialog
+                        },
+                        child: Text('Export to DB'),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
                 ],
               ),
             ),
@@ -287,14 +299,55 @@ class _ResultScreenState extends State<ResultScreen> {
                 },
                 child: Text('Export to CSV'),
               ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     exportToDB(tableName); // Pass the table name to the export method
+              //     Navigator.pop(context); // Close the dialog
+              //     showToast('Exported to DB');
+              //   },
+              //   child: Text('Export to DB'),
+              // ),
+              SizedBox(height: 16.0),
+              Text('Enter file name:'), // Add label for the text input field
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'File Name',
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    tableName = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+  void showExportDBDialog(BuildContext context) {
+    String tableName = ''; // Variable to store the table name entered by the user
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Export Participants'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Select export format:'),
               ElevatedButton(
                 onPressed: () {
-                  exportToDB(tableName); // Pass the table name to the export method
+                  exportToCSV(tableName); // Pass the table name to the export method
                   Navigator.pop(context); // Close the dialog
                   showToast('Exported to DB');
                 },
                 child: Text('Export to DB'),
               ),
+
               SizedBox(height: 16.0),
               Text('Enter table name:'), // Add label for the text input field
               TextField(

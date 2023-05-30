@@ -39,13 +39,13 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          SizedBox(height: 20.0), // Add SizedBox for spacing
+          SizedBox(height: 0.0), // Reduce the spacing above the logo
           Image.asset(
-            'assets/images/rubiks-logo.png',
+            'assets/images/logorubiks-01.png',
             width: 300.0,
             height: 300.0,
           ),
-          SizedBox(height: 0.0), // Add SizedBox for spacing
+          SizedBox(height: 0.0), // Reduce the spacing below the logo
           Column(
             children: <Widget>[
               Text(
@@ -64,7 +64,7 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 15.0), // Add SizedBox for spacing
+          SizedBox(height: 15.0),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
@@ -132,6 +132,7 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
     );
   }
 }
+
 
 
 class RoundButton extends StatelessWidget {

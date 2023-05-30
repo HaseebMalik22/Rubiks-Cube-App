@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/EditRoundResults.dart';
 
 class RoundsScreen extends StatefulWidget {
   @override
@@ -56,10 +57,20 @@ class _RoundsScreenState extends State<RoundsScreen> {
           child: ListView.builder(
             itemCount: _rounds.length,
             itemBuilder: (context, index) {
-              return Card(
-                child: ListTile(
-                  title: Text(_rounds[index].name),
-                  subtitle: Text('${_rounds[index].participants} participants'),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditRoundResults(round: _rounds[index]),
+                    ),
+                  );
+                },
+                child: Card(
+                  child: ListTile(
+                    title: Text(_rounds[index].name),
+                    subtitle: Text('${_rounds[index].participants} participants'),
+                  ),
                 ),
               );
             },

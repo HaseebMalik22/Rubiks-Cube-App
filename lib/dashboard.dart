@@ -7,10 +7,10 @@ import 'package:rubikscube/resultscreen.dart';
 import 'package:rubikscube/roundsetup.dart';
 
 void main() {
-  runApp(DashboardApp());
+  runApp(MyApp());
 }
 
-class DashboardApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,11 +29,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  List<bool> roundToggleStates = [true, false, true];
+  List<bool> roundToggleStates = [true, false, false, false];
   List<List<bool>> attemptToggleStates = [
-    [true, false, true],
+    [true, false, false],
     [false, true, false],
-    [true, true, true],
+    [false, false, true],
+    [false, false, false],
   ];
 
   void toggleRoundState(int index) {
@@ -44,8 +45,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void toggleAttemptState(int roundIndex, int attemptIndex) {
     setState(() {
-      attemptToggleStates[roundIndex][attemptIndex] =
-      !attemptToggleStates[roundIndex][attemptIndex];
+      for (int i = 0; i < attemptToggleStates[roundIndex].length; i++) {
+        attemptToggleStates[roundIndex][i] = (i == attemptIndex);
+      }
     });
   }
 
@@ -67,12 +69,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
       ),
-
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -150,102 +150,141 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Rounds',
+                'Current Rounds',
                 style: TextStyle(
-                  fontSize: 18.0,
+                  fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10.0),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.yellow,
-                  borderRadius: BorderRadius.circular(14.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
-                    ),
+              SizedBox(height: 16.0),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: <Widget>[
+                    for (int i = 0; i < roundToggleStates.length; i++)
+                      RoundToggle(
+                        roundNumber: i + 1,
+                        active: roundToggleStates[i],
+                        onToggle: () => toggleRoundState(i),
+                        attemptToggleStates: attemptToggleStates[i],
+                        onAttemptToggle: (index) => toggleAttemptState(i, index),
+                      ),
                   ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      RoundToggle(
-                        roundNumber: 1,
-                        active: roundToggleStates[0],
-                        onToggle: () => toggleRoundState(0),
-                        attemptToggleStates: attemptToggleStates[0],
-                        onAttemptToggle: (index) => toggleAttemptState(0, index),
-                      ),
-                      RoundToggle(
-                        roundNumber: 2,
-                        active: roundToggleStates[1],
-                        onToggle: () => toggleRoundState(1),
-                        attemptToggleStates: attemptToggleStates[1],
-                        onAttemptToggle: (index) => toggleAttemptState(1, index),
-                      ),
-                      // RoundToggle(
-                      //   roundNumber: 3,
-                      //   active: roundToggleStates[2],
-                      //   onToggle: () => toggleRoundState(2),
-                      //   attemptToggleStates: attemptToggleStates[2],
-                      //   onAttemptToggle: (index) => toggleAttemptState(2, index),
-                      // ),
-                    ],
-                  ),
                 ),
               ),
               SizedBox(height: 20.0),
               Text(
                 'Actions',
                 style: TextStyle(
-                  fontSize: 18.0,
+                  fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10.0),
+              SizedBox(height: 16.0),
               Expanded(
-                child: ListView(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20.0,
+                  crossAxisSpacing: 16.0,
+                  physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   children: <Widget>[
-                    GridView.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 20.0,
-                      crossAxisSpacing: 16.0,
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      children: <Widget>[
-                        DashboardBox(
-                          image: AssetImage('assets/images/participants.png'),
-                          text: 'Participants',
-                        ),
-                        DashboardBox(
-                          image: AssetImage('assets/images/judges.png'),
-                          text: 'Judges',
-                        ),
-                        DashboardBox(
-                          image: AssetImage('assets/images/results.png'),
-                          text: 'Results',
-                        ),
-                        DashboardBox(
-                          image: AssetImage('assets/images/best-time.png'),
-                          text: 'Best time',
-                        ),
-                      ],
+                    DashboardBox(
+                      image: AssetImage('assets/images/participants.png'),
+                      text: 'Participants',
+                    ),
+                    DashboardBox(
+                      image: AssetImage('assets/images/judges.png'),
+                      text: 'Judges',
+                    ),
+                    DashboardBox(
+                      image: AssetImage('assets/images/results.png'),
+                      text: 'Results',
+                    ),
+                    DashboardBox(
+                      image: AssetImage('assets/images/best-time.png'),
+                      text: 'Best Time',
                     ),
                   ],
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class RoundToggle extends StatelessWidget {
+  final int roundNumber;
+  final bool active;
+  final VoidCallback onToggle;
+  final List<bool> attemptToggleStates;
+  final Function(int) onAttemptToggle;
+
+  const RoundToggle({
+    required this.roundNumber,
+    required this.active,
+    required this.onToggle,
+    required this.attemptToggleStates,
+    required this.onAttemptToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4, // Add elevation for the drop shadow
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0), // Set border radius for curved corners
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.0), // Set border radius for curved corners
+          color: Colors.yellow, // Set the background color to yellow
+        ),
+        padding: EdgeInsets.all(16.0), // Add padding for spacing
+        child: Column(
+          children: <Widget>[
+            Text(
+              'Round $roundNumber',
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: onToggle,
+              style: ElevatedButton.styleFrom(
+                primary: active ? Colors.green : Colors.red[400],
+              ),
+              child: Text(active ? 'Active' : 'Inactive'),
+            ),
+            SizedBox(height: 10.0),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: <Widget>[
+                  for (int i = 0; i < attemptToggleStates.length; i++)
+                    Padding(
+                      padding: EdgeInsets.only(right: 10.0),
+                      child: ElevatedButton(
+                        onPressed: () => onAttemptToggle(i),
+                        style: ElevatedButton.styleFrom(
+                          primary: attemptToggleStates[i] ? Colors.green : Colors.red[400],
+                          padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        ),
+                        child: Text('Attempt ${i + 1}'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -283,7 +322,7 @@ class DashboardBox extends StatelessWidget {
               builder: (context) => ResultScreen(),
             ),
           );
-        } else if (text == 'Best time') {
+        } else if (text == 'Best Time') {
           // Replace the navigation with a toast message
           showToastMessage(context);
         }
@@ -294,7 +333,7 @@ class DashboardBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.grey.withOpacity(0.3),
               spreadRadius: 2,
               blurRadius: 5,
               offset: Offset(0, 3),
@@ -335,53 +374,72 @@ class DashboardBox extends StatelessWidget {
   }
 }
 
-class RoundToggle extends StatelessWidget {
-  final int roundNumber;
-  final bool active;
-  final void Function()? onToggle;  // Update the property type
-  final List<bool> attemptToggleStates;
-  final Function(int) onAttemptToggle;
-
-  const RoundToggle({
-    required this.roundNumber,
-    required this.active,
-    required this.onToggle,
-    required this.attemptToggleStates,
-    required this.onAttemptToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Text(
-          'Round $roundNumber',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 10.0),
-        ToggleButtons(
-          children: <Widget>[
-            Text('1st'),
-            Text('2nd'),
-            Text('3rd'),
-          ],
-          isSelected: attemptToggleStates,
-          onPressed: onAttemptToggle,
-        ),
-        SizedBox(height: 10.0),
-        ElevatedButton(
-          onPressed: onToggle,
-          child: Text(active ? 'Active' : 'Inactive'),
-          style: ElevatedButton.styleFrom(
-            primary: active ? Colors.green : Colors.red,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-
-
+// class ParticipantScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Participants'),
+//       ),
+//       body: Center(
+//         child: Text('Participant Screen'),
+//       ),
+//     );
+//   }
+// }
+//
+// class JudgeScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Judges'),
+//       ),
+//       body: Center(
+//         child: Text('Judge Screen'),
+//       ),
+//     );
+//   }
+// }
+//
+// class ResultScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Results'),
+//       ),
+//       body: Center(
+//         child: Text('Result Screen'),
+//       ),
+//     );
+//   }
+// }
+//
+// class RoundSetupScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Round Setup'),
+//       ),
+//       body: Center(
+//         child: Text('Round Setup Screen'),
+//       ),
+//     );
+//   }
+// }
+//
+// class Home extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Home'),
+//       ),
+//       body: Center(
+//         child: Text('Home Screen'),
+//       ),
+//     );
+//   }
+// }
