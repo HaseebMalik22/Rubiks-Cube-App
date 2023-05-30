@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "895598305805",
+    "project_id": "rubikscubeapp-bc497",
+    "storage_bucket": "rubikscubeapp-bc497.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895598305805:android:3edc4d8a767be365a1eb44",
+        "android_client_info": {
+          "package_name": "com.example.rubikscube"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2oNwD8hOPGghlqMxhdUW3LEFX-5Mqicc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
