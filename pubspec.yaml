@@ -32,6 +32,10 @@ dependencies:
     sdk: flutter
   fluttertoast: ^8.0.8
   qr_code_scanner: ^1.0.1
+  sqflite: ^2.2.8+4
+  path: ^1.8.3
+  sqlite3: ^1.11.1
+  shared_preferences: ^2.0.8
 
 
 

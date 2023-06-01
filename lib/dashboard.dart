@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/judgeroundselection.dart';
 import 'package:rubikscube/judgescreen.dart';
 import 'package:rubikscube/participantscreen.dart';
 import 'package:rubikscube/resultscreen.dart';
 import 'package:rubikscube/roundsetup.dart';
+import 'package:rubikscube/database_roundhelper.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,13 +31,25 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  List<bool> roundToggleStates = [true, false, false, false];
-  List<List<bool>> attemptToggleStates = [
-    [true, false, false],
-    [false, true, false],
-    [false, false, true],
-    [false, false, false],
-  ];
+  List<bool> roundToggleStates = [];
+  List<List<bool>> attemptToggleStates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRoundsData();
+  }
+
+  Future<void> fetchRoundsData() async {
+    // Fetch rounds data from the database
+    List<Map<String, dynamic>> rounds = await DatabaseRoundHelper.instance.getRounds();
+
+    // Create round toggle states and attempt toggle states based on fetched data
+    setState(() {
+      roundToggleStates = List.generate(rounds.length, (index) => false);
+      attemptToggleStates = List.generate(rounds.length, (_) => [false, false, false]);
+    });
+  }
 
   void toggleRoundState(int index) {
     setState(() {

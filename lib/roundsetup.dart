@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'database_roundhelper.dart';
 
 class RoundSetupScreen extends StatefulWidget {
   @override
@@ -14,12 +15,9 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
   String roundName = '';
   String matchName = '';
 
-  List<String> previousQualifiedOptions = ['1', '2', '3','4','5','6'];
-
+  List<String> previousQualifiedOptions = ['1', '2', '3', '4', '5', '6'];
   List<String> participantOptions = ['Select All', 'Participant 1', 'Participant 2', 'Participant 3'];
-
   List<String> judgeOptions = ['Select All', 'Judge 1', 'Judge 2', 'Judge 3'];
-
   List<String> ageGroupOptions = ['8-12', '13-16', 'All age group'];
 
   void _showToastMessage(String message) {
@@ -32,6 +30,30 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
       textColor: Colors.white,
       fontSize: 16.0,
     );
+  }
+
+  Future<void> _setRound() async {
+    if (matchName.isNotEmpty &&
+        roundName.isNotEmpty &&
+        selectedParticipant.isNotEmpty &&
+        selectedJudge.isNotEmpty &&
+        selectedPreviousQualified.isNotEmpty &&
+        selectedAgeGroup.isNotEmpty) {
+      final round = {
+        'matchName': matchName,
+        'roundName': roundName,
+        'participant': selectedParticipant,
+        'judge': selectedJudge,
+        'previousQualified': selectedPreviousQualified,
+        'ageGroup': selectedAgeGroup,
+      };
+
+      final roundId = await DatabaseRoundHelper.instance.insertRound(round);
+
+      _showToastMessage('Round Set with ID: $roundId');
+    } else {
+      _showToastMessage('Please fill in all fields');
+    }
   }
 
   @override
@@ -211,19 +233,7 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Perform desired action with round setup data
-                        if (matchName.isNotEmpty &&
-                            roundName.isNotEmpty &&
-                            selectedParticipant.isNotEmpty &&
-                            selectedJudge.isNotEmpty &&
-                            selectedPreviousQualified.isNotEmpty &&
-                            selectedAgeGroup.isNotEmpty) {
-                          _showToastMessage('Round Set');
-                        } else {
-                          _showToastMessage('Please fill in all fields');
-                        }
-                      },
+                      onPressed: _setRound,
                       child: Text('Set Round'),
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(

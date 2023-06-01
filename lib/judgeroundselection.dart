@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_roundhelper.dart';
 import 'package:rubikscube/judgescan.dart';
+
 
 void main() {
   runApp(MaterialApp(
@@ -12,7 +14,36 @@ void main() {
   ));
 }
 
-class JudgeRoundSelectionScreen extends StatelessWidget {
+class JudgeRoundSelectionScreen extends StatefulWidget {
+  @override
+  _JudgeRoundSelectionScreenState createState() =>
+      _JudgeRoundSelectionScreenState();
+}
+
+class _JudgeRoundSelectionScreenState
+    extends State<JudgeRoundSelectionScreen> {
+  List<String> rounds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadRounds();
+  }
+
+  Future<void> loadRounds() async {
+    List<String> loadedRounds = await getRoundsFromDatabase();
+    setState(() {
+      rounds = loadedRounds;
+    });
+  }
+
+  Future<List<String>> getRoundsFromDatabase() async {
+    List<Map<String, dynamic>> roundsData = await DatabaseRoundHelper.instance.getRounds();
+    List<String> roundNames =
+    roundsData.map((round) => round['roundName'] as String).toList();
+    return roundNames;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,16 +53,12 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              // Implement your logout logic here
-              // For example, you can navigate to the home screen
-
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
@@ -39,13 +66,13 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          SizedBox(height: 0.0), // Reduce the spacing above the logo
+          SizedBox(height: 0.0),
           Image.asset(
             'assets/images/logorubiks-01.png',
             width: 300.0,
             height: 300.0,
           ),
-          SizedBox(height: 0.0), // Reduce the spacing below the logo
+          SizedBox(height: 0.0),
           Column(
             children: <Widget>[
               Text(
@@ -84,46 +111,27 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.all(10.0),
                   child: Text(
-                    '                         Rounds',
+                    '                            Rounds',
+
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
+
                     ),
                   ),
                 ),
-                RoundButton(
-                  roundNumber: 'Round 1',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => JudgeScan(),
-                      ),
-                    );
-                  },
-                ),
-                RoundButton(
-                  roundNumber: 'Round 2',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => JudgeScan(),
-                      ),
-                    );
-                  },
-                ),
-                RoundButton(
-                  roundNumber: 'Round 3',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => JudgeScan(),
-                      ),
-                    );
-                  },
-                ),
+                for (String round in rounds)
+                  RoundButton(
+                    roundNumber: round,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JudgeScan(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
@@ -132,8 +140,6 @@ class JudgeRoundSelectionScreen extends StatelessWidget {
     );
   }
 }
-
-
 
 class RoundButton extends StatelessWidget {
   final String roundNumber;

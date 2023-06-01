@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_helper.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+
+
+
+
 
 class Participant {
   int id;
@@ -18,6 +25,30 @@ class Participant {
     this.dateOfBirth,
     required this.category,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'contact': contact,
+      'dateOfBirth': dateOfBirth?.toString(),
+      'category': category,
+    };
+  }
+
+  factory Participant.fromMap(Map<String, dynamic> map) {
+    return Participant(
+      id: map['id'],
+      name: map['name'],
+      email: map['email'],
+      contact: map['contact'],
+      dateOfBirth: map['dateOfBirth'] != null
+          ? DateTime.parse(map['dateOfBirth'])
+          : null,
+      category: map['category'],
+    );
+  }
 }
 
 class ParticipantScreen extends StatefulWidget {
@@ -26,26 +57,7 @@ class ParticipantScreen extends StatefulWidget {
 }
 
 class _ParticipantScreenState extends State<ParticipantScreen> {
-  final List<Participant> participants = [
-    Participant(
-      id: 1,
-      name: 'Alice Johnson',
-      email: 'alice.johnson@example.com',
-      contact: '1234567890',
-      dateOfBirth: DateTime(1990, 1, 1),
-      category: '8-12',
-    ),
-    // Add more participants here
-    Participant(
-      id: 2,
-      name: 'Bob Smith',
-      email: 'bob.smith@example.com',
-      contact: '9876543210',
-      dateOfBirth: DateTime(1995, 2, 10),
-      category: '13-18',
-    ),
-  ];
-
+  final List<Participant> participants = [];
   final idController = TextEditingController();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
@@ -56,6 +68,27 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
   String selectedCategory = '8-12'; // Initialize with a default value
   String searchQuery = '';
   List<Participant> filteredParticipants = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchParticipants();
+  }
+
+  Future<void> fetchParticipants() async {
+    final dbHelper = DatabaseHelper.instance;
+    final Database db = await dbHelper.database;
+
+    final List<Map<String, dynamic>> maps = await db.query('participants');
+
+    setState(() {
+      participants.clear();
+      filteredParticipants.clear();
+      participants.addAll(maps.map((map) => Participant.fromMap(map)));
+      filteredParticipants.addAll(participants);
+    });
+  }
+
 
   @override
   void dispose() {
@@ -76,12 +109,7 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Home(),
-                ),
-              );
+              // Handle logout
             },
           ),
         ],
@@ -164,7 +192,8 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
                                 hintText: 'Select Date',
                               ),
                               child: Text(dateOfBirth != null
-                                  ? '${dateOfBirth!.day}-${dateOfBirth!.month}-${dateOfBirth!.year}'
+                                  ? '${dateOfBirth!.day}-${dateOfBirth!
+                                  .month}-${dateOfBirth!.year}'
                                   : 'Select Date'),
                             ),
                           ),
@@ -207,19 +236,22 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
                       children: <Widget>[
                         Expanded(
                           child: TextField(
-                            decoration: InputDecoration(labelText: 'Search by ID'),
+                            decoration: InputDecoration(
+                                labelText: 'Search by ID'),
                             onChanged: (value) {
                               setState(() {
                                 searchQuery = value;
                               });
                             },
+
                           ),
                         ),
                         SizedBox(width: 8.0),
                         ElevatedButton(
                           onPressed: () {
-                            applySearchFilter();
+                            applySearchFilter(searchQuery);
                           },
+
                           child: Text('Apply'),
                         ),
                       ],
@@ -271,15 +303,27 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     );
   }
 
-  void applySearchFilter() {
+  void applySearchFilter(String searchQuery) async {
+    final dbHelper = DatabaseHelper.instance;
+    final Database db = await dbHelper.database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'participants',
+      where: 'id LIKE ? OR name LIKE ?',
+      whereArgs: ['%$searchQuery%', '%$searchQuery%'],
+    );
+
     setState(() {
-      filteredParticipants = participants.where((participant) {
-        return participant.id.toString().contains(searchQuery);
-      }).toList();
+      filteredParticipants = maps.map((map) => Participant.fromMap(map)).toList();
     });
   }
 
-  void addParticipant() {
+
+
+
+  Future<void> addParticipant() async {
+    final dbHelper = DatabaseHelper.instance;
+
     final id = int.tryParse(idController.text);
     final name = nameController.text.trim();
     final email = emailController.text.trim();
@@ -296,6 +340,8 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
         category: category,
       );
 
+      final result = await dbHelper.addParticipant(participant.toMap());
+
       setState(() {
         participants.add(participant);
         filteredParticipants.add(participant);
@@ -310,9 +356,12 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     }
   }
 
+
+
+
   void editParticipant(Participant participant) {
     showDialog(
-      context: context,
+      context: this.context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Edit Participant'),
@@ -349,7 +398,8 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
                       setState(() {
                         dateOfBirth = selectedDate;
                         dateOfBirthController.text = selectedDate != null
-                            ? '${selectedDate.day}-${selectedDate.month}-${selectedDate.year}'
+                            ? '${selectedDate.day}-${selectedDate
+                            .month}-${selectedDate.year}'
                             : '';
                       });
                     });
@@ -360,7 +410,8 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
                       hintText: 'Select Date',
                     ),
                     child: Text(participant.dateOfBirth != null
-                        ? '${participant.dateOfBirth!.day}-${participant.dateOfBirth!.month}-${participant.dateOfBirth!.year}'
+                        ? '${participant.dateOfBirth!.day}-${participant
+                        .dateOfBirth!.month}-${participant.dateOfBirth!.year}'
                         : 'Select Date'),
                   ),
                 ),
@@ -386,19 +437,19 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
               ],
             ),
           ),
-          actions: <Widget>[
+          actions: [
             TextButton(
-              child: Text('Cancel'),
               onPressed: () {
-                clearFields();
                 Navigator.of(context).pop();
               },
+              child: Text('Cancel'),
             ),
             TextButton(
-              child: Text('Update'),
               onPressed: () {
                 updateParticipant(participant);
+                Navigator.of(context).pop();
               },
+              child: Text('Save'),
             ),
           ],
         );
@@ -406,7 +457,9 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     );
   }
 
-  void updateParticipant(Participant participant) {
+  void updateParticipant(Participant participant) async {
+    final dbHelper = DatabaseHelper.instance;
+
     final id = int.tryParse(idController.text);
     final name = nameController.text.trim();
     final email = emailController.text.trim();
@@ -414,7 +467,8 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     final category = selectedCategory;
 
     if (id != null && name.isNotEmpty && email.isNotEmpty && contact.isNotEmpty) {
-      final updatedParticipant = Participant(
+      // Create a new Participant object with the updated details
+      Participant updatedParticipant = Participant(
         id: id,
         name: name,
         email: email,
@@ -423,16 +477,27 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
         category: category,
       );
 
-      setState(() {
-        participants.remove(participant);
-        participants.add(updatedParticipant);
+      // Update the participant in the database
+      await dbHelper.updateParticipant(updatedParticipant.toMap());
 
-        filteredParticipants.remove(participant);
-        filteredParticipants.add(updatedParticipant);
+      setState(() {
+        // Find the index of the participant in the participants list
+        int index = participants.indexWhere((p) => p.id == participant.id);
+        if (index != -1) {
+          // Update the participant in the participants list
+          participants[index] = updatedParticipant;
+        }
+
+        // Find the index of the participant in the filteredParticipants list
+        int filteredIndex =
+        filteredParticipants.indexWhere((p) => p.id == participant.id);
+        if (filteredIndex != -1) {
+          // Update the participant in the filteredParticipants list
+          filteredParticipants[filteredIndex] = updatedParticipant;
+        }
       });
 
       clearFields();
-      Navigator.of(context).pop(); // Close the dialog
     } else {
       Fluttertoast.showToast(
         msg: 'Please fill in all the fields',
@@ -441,12 +506,50 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     }
   }
 
+
   void deleteParticipant(Participant participant) {
-    setState(() {
-      participants.remove(participant);
-      filteredParticipants.remove(participant);
-    });
+    showDialog(
+      context: this.context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Participant'),
+          content: Text('Are you sure you want to delete this participant?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _deleteParticipantFromDatabase(participant);
+                setState(() {
+                  participants.remove(participant);
+                  filteredParticipants.remove(participant);
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
+
+  Future<void> _deleteParticipantFromDatabase(Participant participant) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    final id = participant.id;
+
+    await db.delete(
+      'participants',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
 
   void clearFields() {
     idController.clear();
@@ -456,7 +559,6 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
     dateOfBirthController.clear();
     setState(() {
       dateOfBirth = null;
-      selectedCategory = '8-12';
     });
   }
 }
