@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_helper.dart';
 import 'package:rubikscube/judgeroundselection.dart';
 
 
@@ -89,10 +90,10 @@ class _JudgeScanState extends State<JudgeScan> {
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 1),
-                  Text(
-                    'Participant ID: $participantID',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  // Text(
+                  //   'Participant ID: $participantID',
+                  //   style: TextStyle(fontSize: 16),
+                  // ),
                   SizedBox(height: 1),
                   Text(
                     'Round Name: Round 1',
@@ -223,15 +224,33 @@ class _JudgeScanState extends State<JudgeScan> {
 
   void _onQRViewCreated(QRViewController controller) {
     qrController = controller;
-    qrController!.scannedDataStream.listen((scanData) {
+    qrController!.scannedDataStream.listen((scanData) async {
       setState(() {
-        participantName = scanData.code!;
-        participantID = scanData.code!;
         isScanning = false;
       });
       qrController!.dispose();
+
+      // Check if participant name exists in the database
+      final participant = await DatabaseHelper.instance.getParticipantByName(scanData.code!);
+      if (participant != null) {
+        setState(() {
+          participantName = participant['name'];
+          participantID = participant['id'];
+        });
+      } else {
+        Fluttertoast.showToast(
+          msg: 'Participant not valid',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
     });
   }
+
+
 
   Future<void> _showConfirmationDialog() async {
     String displayTime = enteredTime;
@@ -249,7 +268,7 @@ class _JudgeScanState extends State<JudgeScan> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Judge Name: John Doe'),
-                  Text('Participant ID: $participantID'),
+                  // Text('Participant ID: $participantID'),
                   Text('Participant Name: $participantName'),
                   Text('Round: Round 1'),
                   Text('Attempts: Attempt 1'),
@@ -312,18 +331,35 @@ class _JudgeScanState extends State<JudgeScan> {
     );
   }
 
-  void _addParticipant() {
 
-    // Add logic to save the participant's information and submission
-    // to your data source or perform any other required actions.
-    print('Participant added:');
-    print('Participant Name: $participantName');
-    print('Participant ID: $participantID');
-    print('Round: Round 1');
-    print('Attempts: Attempt 1');
-    print('Time: $enteredTime');
 
+  void _addParticipant() async {
+    final String scannedName = participantName;
+    final String enteredTime = timeController.text;
+
+    final DatabaseHelper dbHelper = DatabaseHelper.instance;
+    final Map<String, dynamic>? participant = await dbHelper.getParticipantByName(scannedName);
+
+    if (participant != null) {
+      final updatedParticipant = Map<String, dynamic>.from(participant);
+      updatedParticipant['time'] = enteredTime;
+      final int rowsAffected = await dbHelper.updateParticipant(updatedParticipant);
+
+      if (rowsAffected > 0) {
+        print('Time added successfully for participant: $scannedName');
+      } else {
+        print('Failed to update time for participant: $scannedName');
+      }
+    } else {
+      print('Participant not found in the database: $scannedName');
+    }
   }
+
+
+
+
+
+
 
   String incrementTimeByOneSecond(String time) {
     // Add logic to increment the time by one second

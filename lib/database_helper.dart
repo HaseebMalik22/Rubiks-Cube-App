@@ -31,7 +31,8 @@ class DatabaseHelper {
             email TEXT,
             contact TEXT,
             dateOfBirth TEXT,
-            category TEXT
+            category TEXT,
+            time TEXT
           )
         ''');
       },
@@ -65,8 +66,15 @@ class DatabaseHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getParticipants() async {
+  Future<Map<String, dynamic>?> getParticipantByName(String participantName) async {
     final db = await database;
-    return await db.query('participants');
+    final result = await db.query(
+      'participants',
+      where: 'name = ?',
+      whereArgs: [participantName],
+      limit: 1,
+    );
+
+    return result.isNotEmpty ? result.first : null;
   }
 }
