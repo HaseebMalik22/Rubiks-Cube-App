@@ -31,25 +31,56 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  List<String> roundNames = [];
+
   List<bool> roundToggleStates = [];
   List<List<bool>> attemptToggleStates = [];
 
   @override
   void initState() {
     super.initState();
+    // emptyRoundTable();
     fetchRoundsData();
   }
 
   Future<void> fetchRoundsData() async {
     // Fetch rounds data from the database
-    List<Map<String, dynamic>> rounds = await DatabaseRoundHelper.instance.getRounds();
+    List<Map<String, dynamic>> rounds = await DatabaseRoundHelper.instance
+        .getRounds();
+
+    // Print the fetched rounds and their names
+    for (var round in rounds) {
+      final roundName = round['roundName'];
+      if (roundName != null) {
+        print('Round: $roundName');
+      }
+    }
 
     // Create round toggle states and attempt toggle states based on fetched data
     setState(() {
       roundToggleStates = List.generate(rounds.length, (index) => false);
-      attemptToggleStates = List.generate(rounds.length, (_) => [false, false, false]);
+      attemptToggleStates =
+          List.generate(rounds.length, (_) => [false, false, false]);
+    });
+
+    // Store the round names from the database in a list
+    List<String> roundNames = rounds
+        .map((round) => round['roundName'] as String?) // Use null-aware cast
+        .where((roundName) => roundName != null) // Filter out null values
+        .map((
+        roundName) => roundName!) // Remove nullability using non-null assertion
+        .toList();
+
+    // Pass the round names to the RoundToggle widgets
+    setState(() {
+      this.roundNames = roundNames;
     });
   }
+
+  // void emptyRoundTable() async {
+  //   await DatabaseRoundHelper.instance.deleteAllRounds();
+  // }
+
 
   void toggleRoundState(int index) {
     setState(() {
@@ -184,7 +215,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         active: roundToggleStates[i],
                         onToggle: () => toggleRoundState(i),
                         attemptToggleStates: attemptToggleStates[i],
-                        onAttemptToggle: (index) => toggleAttemptState(i, index),
+                        onAttemptToggle: (index) =>
+                            toggleAttemptState(i, index),
+                        roundName: roundNames.length > i ? roundNames[i] : '',
                       ),
                   ],
                 ),
@@ -233,8 +266,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class RoundToggle extends StatelessWidget {
+
+  class RoundToggle extends StatelessWidget {
   final int roundNumber;
+  final String roundName;
   final bool active;
   final VoidCallback onToggle;
   final List<bool> attemptToggleStates;
@@ -242,6 +277,7 @@ class RoundToggle extends StatelessWidget {
 
   const RoundToggle({
     required this.roundNumber,
+    required this.roundName,
     required this.active,
     required this.onToggle,
     required this.attemptToggleStates,
@@ -264,7 +300,7 @@ class RoundToggle extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text(
-              'Round $roundNumber',
+              'Round $roundNumber - $roundName',
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -304,6 +340,7 @@ class RoundToggle extends StatelessWidget {
     );
   }
 }
+
 
 class DashboardBox extends StatelessWidget {
   final ImageProvider image;
