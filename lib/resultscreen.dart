@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_helper.dart';
+import 'package:rubikscube/database_roundhelper.dart';
 
 class ResultScreen extends StatefulWidget {
   @override
@@ -19,12 +21,36 @@ class _ResultScreenState extends State<ResultScreen> {
   bool filterAscending = true;
   int selectedTop = 10;
   List<Map<String, dynamic>> filteredParticipants = [];
-  String selectedRound = 'round1';
+  String selectedRound = '';
+  String bestTime = '';
+  String bestParticipantName = '';
+
+  List<Map<String, dynamic>> rounds = [];
 
   @override
   void initState() {
     super.initState();
     applyFilter();
+    fetchRounds();
+  }
+
+  void fetchRounds() async {
+    List<Map<String, dynamic>> fetchedRounds =
+    await DatabaseRoundHelper.instance.getRounds();
+    setState(() {
+      rounds = fetchedRounds;
+      selectedRound = fetchedRounds[0]['roundName']; // Assuming the first round is selected initially
+    });
+
+    // Retrieve the participant with the lowest time
+    String lowestTime = await DatabaseHelper.instance.getLowestTime();
+    String participantName =
+    await DatabaseHelper.instance.getParticipantName(lowestTime);
+
+    setState(() {
+      bestTime = lowestTime;
+      bestParticipantName = participantName;
+    });
   }
 
   @override
@@ -45,7 +71,6 @@ class _ResultScreenState extends State<ResultScreen> {
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
@@ -77,20 +102,12 @@ class _ResultScreenState extends State<ResultScreen> {
                       SizedBox(width: 8.0),
                       DropdownButton<String>(
                         value: selectedRound,
-                        items: [
-                          DropdownMenuItem(
-                            value: 'round1',
-                            child: Text('Round 1'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'round2',
-                            child: Text('Round 2'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'round3',
-                            child: Text('Round 3'),
-                          ),
-                        ],
+                        items: rounds.map<DropdownMenuItem<String>>((round) {
+                          return DropdownMenuItem<String>(
+                            value: round['roundName'],
+                            child: Text(round['roundName']),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedRound = value!;
@@ -167,7 +184,7 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             SizedBox(height: 16.0),
             Text(
-              'Best Time: 03:25:122',
+              'Best Time: $bestTime',
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.normal,
@@ -175,7 +192,7 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             SizedBox(height: 8.0),
             Text(
-              'Participant Name: Haseeb Malik',
+              'Participant Name: $bestParticipantName',
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.normal,
@@ -299,14 +316,6 @@ class _ResultScreenState extends State<ResultScreen> {
                 },
                 child: Text('Export to CSV'),
               ),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     exportToDB(tableName); // Pass the table name to the export method
-              //     Navigator.pop(context); // Close the dialog
-              //     showToast('Exported to DB');
-              //   },
-              //   child: Text('Export to DB'),
-              // ),
               SizedBox(height: 16.0),
               Text('Enter file name:'), // Add label for the text input field
               TextField(
@@ -326,7 +335,6 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-
   void showExportDBDialog(BuildContext context) {
     String tableName = ''; // Variable to store the table name entered by the user
 
@@ -341,13 +349,12 @@ class _ResultScreenState extends State<ResultScreen> {
               Text('Select export format:'),
               ElevatedButton(
                 onPressed: () {
-                  exportToCSV(tableName); // Pass the table name to the export method
+                  exportToDB(tableName); // Pass the table name to the export method
                   Navigator.pop(context); // Close the dialog
                   showToast('Exported to DB');
                 },
                 child: Text('Export to DB'),
               ),
-
               SizedBox(height: 16.0),
               Text('Enter table name:'), // Add label for the text input field
               TextField(
@@ -366,7 +373,6 @@ class _ResultScreenState extends State<ResultScreen> {
       },
     );
   }
-
 
   void applyFilter() {
     filteredParticipants = List.from(participants);

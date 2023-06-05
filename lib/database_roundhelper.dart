@@ -39,6 +39,9 @@ class DatabaseRoundHelper {
     ''');
   }
 
+
+
+
   // Future<int> deleteAllRounds() async {
   //   final db = await instance.database;
   //   return await db.delete('rounds');
@@ -52,5 +55,7 @@ class DatabaseRoundHelper {
   Future<List<Map<String, dynamic>>> getRounds() async {
     final db = await instance.database;
     return await db.query('rounds');
+
+
   }
 }

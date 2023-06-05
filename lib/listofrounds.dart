@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/EditRoundResults.dart';
+import 'package:rubikscube/database_roundhelper.dart';
 
 class RoundsScreen extends StatefulWidget {
   @override
@@ -8,13 +9,19 @@ class RoundsScreen extends StatefulWidget {
 }
 
 class _RoundsScreenState extends State<RoundsScreen> {
-  List<Round> _rounds = [
-    Round(id: 1, name: 'Round 1', participants: 10),
-    Round(id: 2, name: 'Round 2', participants: 22),
-    Round(id: 3, name: 'Round 3', participants: 30),
-    Round(id: 4, name: 'Round 4', participants: 55),
-    Round(id: 5, name: 'Round 5', participants: 28),
-  ];
+  Future<List<Round>> _fetchRounds() async {
+    List<Round> rounds = [];
+
+    try {
+      List<Map<String, dynamic>> roundData = await DatabaseRoundHelper.instance.getRounds();
+      rounds = roundData.map((data) => Round.fromMap(data)).toList();
+    } catch (e) {
+      // Handle any errors that occurred while fetching rounds from the database
+      print('Error fetching rounds: $e');
+    }
+
+    return rounds;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +41,12 @@ class _RoundsScreenState extends State<RoundsScreen> {
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.yellow,
@@ -54,25 +60,43 @@ class _RoundsScreenState extends State<RoundsScreen> {
               ),
             ],
           ),
-          child: ListView.builder(
-            itemCount: _rounds.length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditRoundResults(round: _rounds[index]),
-                    ),
-                  );
-                },
-                child: Card(
-                  child: ListTile(
-                    title: Text(_rounds[index].name),
-                    subtitle: Text('${_rounds[index].participants} participants'),
-                  ),
-                ),
-              );
+          child: FutureBuilder<List<Round>>(
+            future: _fetchRounds(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // Display a loading indicator while fetching rounds
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                // Display an error message if there was an error fetching rounds
+                return Center(child: Text('Error fetching rounds'));
+              } else if (snapshot.hasData) {
+                // Display the list of rounds
+                List<Round> rounds = snapshot.data!;
+                return ListView.builder(
+                  itemCount: rounds.length,
+                  itemBuilder: (context, index) {
+                    final round = rounds[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditRoundResults(round: round),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        child: ListTile(
+                          title: Text(round.name),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              } else {
+                // Display a message if there are no rounds
+                return Center(child: Text('No rounds found'));
+              }
             },
           ),
         ),
@@ -84,11 +108,16 @@ class _RoundsScreenState extends State<RoundsScreen> {
 class Round {
   final int id;
   final String name;
-  final int participants;
 
   Round({
     required this.id,
     required this.name,
-    required this.participants,
   });
+
+  factory Round.fromMap(Map<String, dynamic> map) {
+    return Round(
+      id: map['id'],
+      name: map['roundName'],
+    );
+  }
 }

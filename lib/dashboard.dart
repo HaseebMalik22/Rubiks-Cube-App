@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_helper.dart';
 import 'package:rubikscube/judgeroundselection.dart';
 import 'package:rubikscube/judgescreen.dart';
 import 'package:rubikscube/participantscreen.dart';
@@ -412,9 +413,15 @@ class DashboardBox extends StatelessWidget {
     );
   }
 
-  void showToastMessage(BuildContext context) {
+  void showToastMessage(BuildContext context) async {
+    // Fetch the lowest time from the participants table in the database
+    String lowestTime = await DatabaseHelper.instance.getLowestTime();
+
+    // Fetch the participant name associated with the lowest time
+    String participantName = await DatabaseHelper.instance.getParticipantName(lowestTime);
+
     Fluttertoast.showToast(
-      msg: 'Best time: 01:25:112',
+      msg: 'Best time: $lowestTime by $participantName',
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
@@ -423,6 +430,7 @@ class DashboardBox extends StatelessWidget {
       fontSize: 16.0,
     );
   }
+
 }
 
 // class ParticipantScreen extends StatelessWidget {

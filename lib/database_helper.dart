@@ -77,4 +77,33 @@ class DatabaseHelper {
 
     return result.isNotEmpty ? result.first : null;
   }
+
+  Future<List<Map<String, dynamic>>> getAllParticipants() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('participants');
+    return maps;
+  }
+
+  Future<String> getLowestTime() async {
+    final db = await database;
+    final result = await db.query(
+      'participants',
+      orderBy: 'time',
+      limit: 1,
+    );
+
+    return result.isNotEmpty ? result.first['time'] as String : '';
+  }
+
+  Future<String> getParticipantName(String time) async {
+    final db = await database;
+    final result = await db.query(
+      'participants',
+      where: 'time = ?',
+      whereArgs: [time],
+      limit: 1,
+    );
+
+    return result.isNotEmpty ? result.first['name'] as String : '';
+  }
 }
