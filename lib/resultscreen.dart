@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_helper.dart';
 import 'package:rubikscube/database_roundhelper.dart';
+import 'package:rubikscube/timerecord_helper.dart';
 
 class ResultScreen extends StatefulWidget {
   @override
@@ -9,14 +10,9 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  List<Map<String, dynamic>> participants = [
-    {'name': 'John Doe', 'ageGroup': '8-12', 'bestTime': '1:30'},
-    {'name': 'Jane Smith', 'ageGroup': '8-12', 'bestTime': '2:15'},
-    {'name': 'haseeb', 'ageGroup': '13-16', 'bestTime': '1:45'},
-    {'name': 'ali', 'ageGroup': '13-16', 'bestTime': '2:00'},
-    {'name': 'raza', 'ageGroup': '13-16', 'bestTime': '1:00'},
-    // Add more participants...
-  ];
+  List<Map<String, dynamic>> participants = [];
+
+
 
   bool filterAscending = true;
   int selectedTop = 10;
@@ -27,12 +23,40 @@ class _ResultScreenState extends State<ResultScreen> {
 
   List<Map<String, dynamic>> rounds = [];
 
+  TimeRecordHelper timeRecordHelper = TimeRecordHelper();
+
   @override
   void initState() {
     super.initState();
     applyFilter();
+    fetchParticipants();
     fetchRounds();
   }
+
+  void fetchParticipants() async {
+    List<TimeRecord> timeRecords = await timeRecordHelper.getAllTimeRecords();
+    List<Map<String, dynamic>> fetchedParticipants = timeRecords.map((record) {
+      return {
+        'name': record.participantName ?? '',
+        'bestTime': record.time ?? '',
+        'attempt': record.attempt?.toString() ?? '',
+      };
+    }).toList();
+
+    setState(() {
+      participants = fetchedParticipants;
+    });
+
+    // Retrieve the participant with the lowest time
+    String lowestTime = await DatabaseHelper.instance.getLowestTime();
+    String participantName = await DatabaseHelper.instance.getParticipantName(lowestTime);
+
+    setState(() {
+      bestTime = lowestTime;
+      bestParticipantName = participantName;
+    });
+  }
+
 
   void fetchRounds() async {
     List<Map<String, dynamic>> fetchedRounds =
@@ -128,15 +152,15 @@ class _ResultScreenState extends State<ResultScreen> {
                       TableRow(
                         children: [
                           TableCell(child: Text('Participant Name')),
-                          TableCell(child: Text('Age Group')),
+                          TableCell(child: Text('Attempt')),
                           TableCell(child: Text('Best Time')),
                         ],
                       ),
                       for (var participant in filteredParticipants)
                         TableRow(
                           children: [
-                            TableCell(child: Text(participant['name'])),
-                            TableCell(child: Text(participant['ageGroup'])),
+                            TableCell(child: Text(participant['name'] ?? '')),
+                            TableCell(child: Text(participant['attempt'] ?? '')),
                             TableCell(child: Text(participant['bestTime'] ?? '-')),
                           ],
                         ),
