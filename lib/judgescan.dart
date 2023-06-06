@@ -5,15 +5,27 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_helper.dart';
 import 'package:rubikscube/judgeroundselection.dart';
+import 'package:rubikscube/timerecord_helper.dart';
 
 
 
 class JudgeScan extends StatefulWidget {
+  final String roundName;
+  final String? attemptNowOpen;
+
+  JudgeScan({required this.roundName, this.attemptNowOpen});
+
   @override
-  _JudgeScanState createState() => _JudgeScanState();
+  _JudgeScanState createState() =>
+      _JudgeScanState(roundName: roundName, attemptNowOpen: attemptNowOpen);
 }
 
 class _JudgeScanState extends State<JudgeScan> {
+  final String roundName;
+  final String? attemptNowOpen;
+
+  _JudgeScanState({required this.roundName, this.attemptNowOpen});
+
   String selectedAttempts = '';
   String enteredTime = '';
   String participantName = '';
@@ -96,19 +108,21 @@ class _JudgeScanState extends State<JudgeScan> {
                   // ),
                   SizedBox(height: 1),
                   Text(
-                    'Round Name: Round 1',
+                    'Round Name: ${widget.roundName}',
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 1),
-                  Text(
-                    'Attempts:',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 1),
+                  // Text(
+                  //   '${widget.attemptNowOpen}',
+                  //   style: TextStyle(fontSize: 16),
+                  // )
+                  // SizedBox(height: 1),
                   Row(
                     children: [
-                      Text('Attempt 1'),
-                    ],
+                      Text(
+                        'Attempt : ${widget.attemptNowOpen}',
+                        style: TextStyle(fontSize: 16),
+                      )],
                   ),
                   SizedBox(height: 6),
                   Row(
@@ -270,8 +284,8 @@ class _JudgeScanState extends State<JudgeScan> {
                   Text('Judge Name: John Doe'),
                   // Text('Participant ID: $participantID'),
                   Text('Participant Name: $participantName'),
-                  Text('Round: Round 1'),
-                  Text('Attempts: Attempt 1'),
+                  Text('Round: $roundName'),
+                  Text('Attempt: $attemptNowOpen'),
                   Text('Time: $displayTime'),
                 ],
               ),
@@ -344,6 +358,17 @@ class _JudgeScanState extends State<JudgeScan> {
       final updatedParticipant = Map<String, dynamic>.from(participant);
       updatedParticipant['time'] = enteredTime;
       final int rowsAffected = await dbHelper.updateParticipant(updatedParticipant);
+      final TimeRecord timeRecord = TimeRecord(
+        id: null, // Set id as null to let the database assign a new auto-incremented value
+        participantName: scannedName,
+        round: roundName,
+        attempt: attemptNowOpen ?? '',
+        time: enteredTime,
+      );
+
+      final TimeRecordHelper dbHelpers = TimeRecordHelper();
+      await dbHelpers.insertTimeRecord(timeRecord);
+
 
       if (rowsAffected > 0) {
         print('Time added successfully for participant: $scannedName');
@@ -408,6 +433,6 @@ void main() {
     theme: ThemeData(
       primarySwatch: Colors.blue,
     ),
-    home: JudgeScan(),
+    home: JudgeScan(roundName: '', attemptNowOpen: ''),
   ));
 }

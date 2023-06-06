@@ -34,6 +34,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   List<String> roundNames = [];
 
+
+
   List<bool> roundToggleStates = [];
   List<List<bool>> attemptToggleStates = [];
 
@@ -43,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // emptyRoundTable();
     fetchRoundsData();
   }
+
 
   Future<void> fetchRoundsData() async {
     // Fetch rounds data from the database
@@ -59,17 +62,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Create round toggle states and attempt toggle states based on fetched data
     setState(() {
-      roundToggleStates = List.generate(rounds.length, (index) => false);
+      roundToggleStates =
+          List.generate(rounds.length, (index) => false);
       attemptToggleStates =
           List.generate(rounds.length, (_) => [false, false, false]);
     });
 
     // Store the round names from the database in a list
     List<String> roundNames = rounds
-        .map((round) => round['roundName'] as String?) // Use null-aware cast
-        .where((roundName) => roundName != null) // Filter out null values
-        .map((
-        roundName) => roundName!) // Remove nullability using non-null assertion
+        .map((round) => round['roundName'] as String?)
+        .where((roundName) => roundName != null)
+        .map((roundName) => roundName!)
         .toList();
 
     // Pass the round names to the RoundToggle widgets
@@ -78,14 +81,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // void emptyRoundTable() async {
-  //   await DatabaseRoundHelper.instance.deleteAllRounds();
-  // }
-
-
   void toggleRoundState(int index) {
     setState(() {
       roundToggleStates[index] = !roundToggleStates[index];
+
+      // Store the active/inactive state in the database
+      String roundName = roundNames[index];
+      String roundState = roundToggleStates[index] ? 'active' : 'inactive';
+      DatabaseRoundHelper.instance.updateRoundState(roundName, roundState);
     });
   }
 
@@ -93,6 +96,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       for (int i = 0; i < attemptToggleStates[roundIndex].length; i++) {
         attemptToggleStates[roundIndex][i] = (i == attemptIndex);
+
+        // Store the active attempt in the database
+        String roundName = roundNames[roundIndex];
+        String attemptState = (i == attemptIndex) ? 'active' : 'inactive';
+        DatabaseRoundHelper.instance.updateAttemptState(roundName, attemptIndex);
       }
     });
   }

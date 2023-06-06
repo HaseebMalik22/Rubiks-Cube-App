@@ -3,7 +3,6 @@ import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_roundhelper.dart';
 import 'package:rubikscube/judgescan.dart';
 
-
 void main() {
   runApp(MaterialApp(
     title: 'Judge Round Selection',
@@ -31,17 +30,28 @@ class _JudgeRoundSelectionScreenState
   }
 
   Future<void> loadRounds() async {
-    List<String> loadedRounds = await getRoundsFromDatabase();
+    List<String> loadedRounds = await getActiveRoundsFromDatabase();
     setState(() {
       rounds = loadedRounds;
     });
   }
 
-  Future<List<String>> getRoundsFromDatabase() async {
-    List<Map<String, dynamic>> roundsData = await DatabaseRoundHelper.instance.getRounds();
-    List<String> roundNames =
-    roundsData.map((round) => round['roundName'] as String).toList();
-    return roundNames;
+  Future<List<String>> getActiveRoundsFromDatabase() async {
+    List<Map<String, dynamic>> roundsData =
+    await DatabaseRoundHelper.instance.getRounds();
+    List<String> activeRoundNames = [];
+    for (var round in roundsData) {
+      if (round['roundNowOpen'] == 'active') {
+        activeRoundNames.add(round['roundName'] as String);
+      }
+    }
+    return activeRoundNames;
+  }
+
+  Future<String?> getAttemptNowOpen(String roundName) async {
+    Map<String, dynamic>? roundData =
+    await DatabaseRoundHelper.instance.getRoundByName(roundName);
+    return roundData?['attemptNowOpen'] as String?;
   }
 
   @override
@@ -111,25 +121,41 @@ class _JudgeRoundSelectionScreenState
                 Padding(
                   padding: EdgeInsets.all(10.0),
                   child: Text(
-                    '                            Rounds',
-
+                    '                             Rounds',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-
                     ),
                   ),
                 ),
                 for (String round in rounds)
-                  RoundButton(
-                    roundNumber: round,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => JudgeScan(),
-                        ),
-                      );
+                  FutureBuilder<String?>(
+                    future: getAttemptNowOpen(round),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        String? attemptNowOpen = snapshot.data;
+                        return RoundButton(
+                          roundNumber: round,
+                          roundName: round,
+                          attemptNowOpen: attemptNowOpen,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => JudgeScan(
+                                  roundName: round,
+                                  attemptNowOpen: attemptNowOpen,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
                     },
                   ),
               ],
@@ -143,9 +169,16 @@ class _JudgeRoundSelectionScreenState
 
 class RoundButton extends StatelessWidget {
   final String roundNumber;
+  final String roundName;
+  final String? attemptNowOpen;
   final VoidCallback onPressed;
 
-  const RoundButton({required this.roundNumber, required this.onPressed});
+  const RoundButton({
+    required this.roundNumber,
+    required this.roundName,
+    required this.attemptNowOpen,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {

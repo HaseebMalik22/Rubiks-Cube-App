@@ -36,6 +36,21 @@ dependencies:
   path: ^1.8.3
   sqlite3: ^1.11.1
   shared_preferences: ^2.0.8
+  path_provider: ^2.0.15
+  excel: ^2.1.0
+  csv: ^5.0.2
+  file: ^6.0.0
+  permission_handler: ^10.2.0
+
+  universal_io: ^2.1.0
+  permission_handler_platform_interface: ^3.0.0
+  package_info_plus: ^4.0.2
+
+
+
+
+
+
 
 
 
