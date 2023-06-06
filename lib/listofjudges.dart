@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_judgehelper.dart';
 
 class Judges {
   final String id;
@@ -20,59 +21,28 @@ class ListOfJudgesScreen extends StatefulWidget {
 }
 
 class _ListOfJudgesScreenState extends State<ListOfJudgesScreen> {
-  List<Judges> _judges = [
-    Judges(
-      id: '001',
-      name: 'John Doe',
-      email: 'john@example.com',
-    ),
-    Judges(
-      id: '002',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-    ),
-    Judges(
-      id: '003',
-      name: 'Haseeb Malik',
-      email: 'haseeb@example.com',
-    ),
-    Judges(
-      id: '004',
-      name: 'Amir Ali',
-      email: 'amir@example.com',
-    ),
-    Judges(
-      id: '005',
-      name: 'Mubeen Ul Haq',
-      email: 'mubeen@example.com',
-    ),
-    Judges(
-      id: '006',
-      name: 'Wilson',
-      email: 'wilson@example.com',
-    ),
-    Judges(
-      id: '007',
-      name: 'Anum',
-      email: 'anum@example.com',
-    ),
-    Judges(
-      id: '008',
-      name: 'Anas Sheikh',
-      email: 'anas@example.com',
-    ),
-    Judges(
-      id: '009',
-      name: 'Shaukat',
-      email: 'shaukat@example.com',
-    ),
-    Judges(
-      id: '010',
-      name: 'Yasir',
-      email: 'yasir@example.com',
-    ),
-    // Add more participants here
-  ];
+  List<Judges> _judges = []; // Initialize an empty list
+
+  @override
+  void initState() {
+    super.initState();
+    _loadJudges(); // Fetch judges data from the database
+  }
+
+  Future<void> _loadJudges() async {
+    final dbHelper = DatabaseJudgeHelper.instance;
+    final judges = await dbHelper.getJudges(); // Fetch judges data from the database
+
+    setState(() {
+      _judges = judges
+          .map((judgeMap) => Judges(
+        id: judgeMap['id'].toString(),
+        name: judgeMap['name'],
+        email: judgeMap['email'],
+      ))
+          .toList();
+    });
+  }
 
   String _searchId = '';
   Judges? _searchResult;
@@ -81,6 +51,7 @@ class _ListOfJudgesScreenState extends State<ListOfJudgesScreen> {
     setState(() {
       _searchResult = _judges.firstWhere(
             (participant) => participant.id == _searchId,
+
         orElse: () => Judges(
           id: '',
           name: '',

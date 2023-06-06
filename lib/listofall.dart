@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rubikscube/Homepage.dart';
+import 'package:rubikscube/database_helper.dart';
 
 class Participant {
   final String id;
@@ -22,69 +23,29 @@ class ListOfAllScreen extends StatefulWidget {
 }
 
 class _ListOfAllScreenState extends State<ListOfAllScreen> {
-  List<Participant> _participants = [
-    Participant(
-      id: '001',
-      name: 'John Doe',
-      email: 'john@example.com',
-      bestTime: '00:30:22',
-    ),
-    Participant(
-      id: '002',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      bestTime: '00:45:14',
-    ),
-    Participant(
-      id: '003',
-      name: 'Haseeb Malik',
-      email: 'haseeb@example.com',
-      bestTime: '00:47:14',
-    ),
-    Participant(
-      id: '004',
-      name: 'Amir Ali',
-      email: 'amir@example.com',
-      bestTime: '00:41:17',
-    ),
-    Participant(
-      id: '005',
-      name: 'Mubeen Ul Haq',
-      email: 'mubeen@example.com',
-      bestTime: '00:49:14',
-    ),
-    Participant(
-      id: '006',
-      name: 'Wilson',
-      email: 'wilson@example.com',
-      bestTime: '00:45:14',
-    ),
-    Participant(
-      id: '007',
-      name: 'Anum',
-      email: 'anum@example.com',
-      bestTime: '00:22:14',
-    ),
-    Participant(
-      id: '008',
-      name: 'Anas Sheikh',
-      email: 'anas@example.com',
-      bestTime: '00:55:17',
-    ),
-    Participant(
-      id: '009',
-      name: 'Shaukat',
-      email: 'shaukat@example.com',
-      bestTime: '00:25:14',
-    ),
-    Participant(
-      id: '010',
-      name: 'Yasir',
-      email: 'yasir@example.com',
-      bestTime: '00:28:16',
-    ),
-    // Add more participants here
-  ];
+  List<Participant> _participants = [];
+
+  void _fetchParticipantsFromDatabase() async {
+    List<Map<String, dynamic>> participantsData = await DatabaseHelper.instance.getAllParticipants();
+    setState(() {
+      _participants = participantsData.map((data) {
+        return Participant(
+          id: data['id'].toString(),
+          name: data['name'],
+          email: data['email'],
+          bestTime: data['time'],
+        );
+      }).toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchParticipantsFromDatabase();
+  }
+
+
 
   String _searchId = '';
   Participant? _searchResult;
@@ -213,6 +174,7 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
                         DataCell(Text(participant.bestTime)),
                       ]);
                     }).toList(),
+
                   ),
                 ),
               ),
