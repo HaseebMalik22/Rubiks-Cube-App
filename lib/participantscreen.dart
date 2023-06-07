@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -109,6 +110,12 @@ class _ParticipantScreenState extends State<ParticipantScreen> {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Home(),
+                ),
+              );
               // Handle logout
             },
           ),

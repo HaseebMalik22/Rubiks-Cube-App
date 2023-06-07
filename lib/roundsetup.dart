@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rubikscube/Homepage.dart';
 import 'database_roundhelper.dart';
 
 class RoundSetupScreen extends StatefulWidget {
@@ -61,6 +62,20 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Round Setup'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Home(),
+                ),
+              );
+              // Handle logout
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Padding(

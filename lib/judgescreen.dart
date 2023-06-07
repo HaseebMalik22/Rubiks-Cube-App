@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rubikscube/Homepage.dart';
 import 'database_judgehelper.dart';
 
 class JudgeScreen extends StatefulWidget {
@@ -137,6 +138,20 @@ class _JudgeScreenState extends State<JudgeScreen> with RouteAware {
     return Scaffold(
       appBar: AppBar(
         title: Text('Judges'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Home(),
+                ),
+              );
+              // Handle logout
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: judges.length,
