@@ -38,7 +38,7 @@ class _EditRoundResultsState extends State<EditRoundResults> {
   }
 
   void fetchTimeRecords() async {
-    List<TimeRecord> records = await timeRecordHelper.getAllTimeRecords();
+    List<TimeRecord> records = await timeRecordHelper.getTimeRecordsForRound(widget.round.name);
     setState(() {
       timeRecords = records;
       filteredTimeRecords = records;

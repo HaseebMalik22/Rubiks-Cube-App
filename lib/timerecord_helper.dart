@@ -78,6 +78,24 @@ class TimeRecordHelper {
     });
   }
 
+  Future<List<TimeRecord>> getTimeRecordsForRound(String roundName) async {
+    final db = await _database();
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableName,
+      where: '$columnRound = ?',
+      whereArgs: [roundName],
+    );
+    return List.generate(maps.length, (index) {
+      return TimeRecord(
+        id: maps[index][columnId],
+        participantName: maps[index][columnParticipantName],
+        round: maps[index][columnRound],
+        attempt: maps[index][columnAttempt],
+        time: maps[index][columnTime],
+      );
+    });
+  }
+
   Future<void> updateTimeRecord(int? id, String time) async {
     final db = await _database();
     await db.update(
