@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/listofrounds.dart';
+import 'package:rubikscube/timerecord_helper.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as path;
 
 class EditRoundResults extends StatefulWidget {
   final Round round;
@@ -13,16 +16,38 @@ class EditRoundResults extends StatefulWidget {
 }
 
 class _EditRoundResultsState extends State<EditRoundResults> {
-  List<Participant> filteredParticipants = [];
+  List<TimeRecord> timeRecords = [];
+  List<TimeRecord> filteredTimeRecords = [];
   String searchQuery = '';
+
+  TimeRecordHelper timeRecordHelper = TimeRecordHelper();
 
   void searchParticipants() {
     setState(() {
-      filteredParticipants = participants.where((participant) {
-        return participant.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            participant.id.toLowerCase().contains(searchQuery.toLowerCase());
+      filteredTimeRecords = timeRecords.where((timeRecord) {
+        return timeRecord.participantName.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            timeRecord.round.toLowerCase().contains(searchQuery.toLowerCase());
       }).toList();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTimeRecords();
+  }
+
+  void fetchTimeRecords() async {
+    List<TimeRecord> records = await timeRecordHelper.getAllTimeRecords();
+    setState(() {
+      timeRecords = records;
+      filteredTimeRecords = records;
+    });
+  }
+
+  Future<void> updateTimeRecord(int? id, String time) async {
+    await timeRecordHelper.updateTimeRecord(id, time);
+    fetchTimeRecords(); // Refresh the time records after updating
   }
 
   @override
@@ -77,6 +102,16 @@ class _EditRoundResultsState extends State<EditRoundResults> {
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Round: ${widget.round.name}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
                     Expanded(
@@ -99,11 +134,10 @@ class _EditRoundResultsState extends State<EditRoundResults> {
                 ),
               ),
               Expanded(
-
                 child: ListView.builder(
-                  itemCount: filteredParticipants.length,
+                  itemCount: filteredTimeRecords.length,
                   itemBuilder: (context, index) {
-                    Participant participant = filteredParticipants[index];
+                    TimeRecord timeRecord = filteredTimeRecords[index];
                     return Container(
                       margin: EdgeInsets.symmetric(vertical: 6.0),
                       decoration: BoxDecoration(
@@ -120,13 +154,13 @@ class _EditRoundResultsState extends State<EditRoundResults> {
                       ),
                       child: ListTile(
                         tileColor: Colors.white,
-                        title: Text('ID: ${participant.id}'),
+                        title: Text('ID: ${timeRecord.id}'),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Name: ${participant.name}'),
-                            Text('Time: ${participant.time}'),
-                            Text('Attempts: ${participant.attempts != null ? participant.attempts!.map((attempt) => 'Attempt: $attempt').join(", ") : '1'}'),
+                            Text('Name: ${timeRecord.participantName}'),
+                            Text('Time: ${timeRecord.time}'),
+                            Text('Attempts: ${timeRecord.attempt}'),
                           ],
                         ),
                         trailing: IconButton(
@@ -136,7 +170,8 @@ class _EditRoundResultsState extends State<EditRoundResults> {
                             showDialog(
                               context: context,
                               builder: (context) => EditTimeDialog(
-                                participant: participant,
+                                timeRecord: timeRecord,
+                                updateTimeRecord: updateTimeRecord,
                               ),
                             );
                           },
@@ -154,12 +189,23 @@ class _EditRoundResultsState extends State<EditRoundResults> {
   }
 }
 
-class EditTimeDialog extends StatelessWidget {
-  final Participant participant;
-  final TextEditingController _timeController = TextEditingController();
+class EditTimeDialog extends StatefulWidget {
+  final TimeRecord timeRecord;
+  final Function(int?, String) updateTimeRecord;
 
-  EditTimeDialog({required this.participant}) {
-    _timeController.text = participant.time;
+  EditTimeDialog({required this.timeRecord, required this.updateTimeRecord});
+
+  @override
+  _EditTimeDialogState createState() => _EditTimeDialogState();
+}
+
+class _EditTimeDialogState extends State<EditTimeDialog> {
+  TextEditingController _timeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _timeController.text = widget.timeRecord.time;
   }
 
   @override
@@ -171,8 +217,8 @@ class EditTimeDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('ID: ${participant.id}'),
-          Text('Name: ${participant.name}'),
+          Text('ID: ${widget.timeRecord.id}'),
+          Text('Name: ${widget.timeRecord.participantName}'),
           TextField(
             controller: _timeController,
             onChanged: (value) {
@@ -191,7 +237,7 @@ class EditTimeDialog extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             // Save the edited time
-            participant.time = editedTime;
+            widget.updateTimeRecord(widget.timeRecord.id, editedTime);
 
             // Close the dialog
             Navigator.pop(context);
@@ -219,25 +265,3 @@ class _TimeInputFormatter extends TextInputFormatter {
     return newValue;
   }
 }
-
-class Participant {
-  final String id;
-  final String name;
-  String time;
-  List<int>? attempts;
-
-  Participant({
-    required this.id,
-    required this.name,
-    required this.time,
-    this.attempts,
-  });
-}
-
-// Sample list of participants
-List<Participant> participants = [
-  Participant(id: '1', name: 'John Doe', time: '00:30', attempts: [1, 2, 3]),
-  Participant(id: '2', name: 'Jane Smith', time: '01:15', attempts: [1, 2]),
-  Participant(id: '3', name: 'Mike Johnson', time: '00:45', attempts: [1]),
-  Participant(id: '4', name: 'Sarah Thompson', time: '01:05', attempts: [1, 2, 3, 4]),
-];

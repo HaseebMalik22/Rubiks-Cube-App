@@ -41,6 +41,7 @@ dependencies:
   csv: ^5.0.2
   file: ^6.0.0
   permission_handler: ^10.2.0
+  url_launcher: ^6.1.11
 
   universal_io: ^2.1.0
   permission_handler_platform_interface: ^3.0.0

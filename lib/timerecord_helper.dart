@@ -2,11 +2,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class TimeRecord {
-  final int? id;  // Add a nullable type and default value
+  final int? id;
   final String participantName;
   final String round;
   final String attempt;
-  final String time;
+  String time; // Change to a regular field
 
   TimeRecord({
     required this.id,
@@ -15,6 +15,7 @@ class TimeRecord {
     required this.attempt,
     required this.time,
   });
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -77,7 +78,7 @@ class TimeRecordHelper {
     });
   }
 
-  Future<void> updateTimeRecord(int id, String time) async {
+  Future<void> updateTimeRecord(int? id, String time) async {
     final db = await _database();
     await db.update(
       tableName,
@@ -86,6 +87,5 @@ class TimeRecordHelper {
       whereArgs: [id],
     );
   }
-
 
 }

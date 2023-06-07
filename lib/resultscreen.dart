@@ -1,8 +1,17 @@
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_helper.dart';
 import 'package:rubikscube/database_roundhelper.dart';
 import 'package:rubikscube/timerecord_helper.dart';
+import 'package:universal_io/io.dart';
+import 'package:path/path.dart' as path;
+
 
 class ResultScreen extends StatefulWidget {
   @override
@@ -35,19 +44,24 @@ class _ResultScreenState extends State<ResultScreen> {
 
   void fetchParticipants() async {
     List<TimeRecord> timeRecords = await timeRecordHelper.getAllTimeRecords();
-    List<Map<String, dynamic>> fetchedParticipants = timeRecords.map((record) {
+
+    // Filter time records based on the selected round
+    List<TimeRecord> filteredTimeRecords = timeRecords.where((record) => record.round == selectedRound).toList();
+
+    List<Map<String, dynamic>> fetchedParticipants = filteredTimeRecords.map((record) {
       return {
         'name': record.participantName ?? '',
         'bestTime': record.time ?? '',
         'attempt': record.attempt?.toString() ?? '',
+        'round': record.round ?? '',
       };
     }).toList();
 
     setState(() {
       participants = fetchedParticipants;
+      applyFilter(); // Apply filter and sorting after fetching participants
     });
 
-    // Retrieve the participant with the lowest time
     String lowestTime = await DatabaseHelper.instance.getLowestTime();
     String participantName = await DatabaseHelper.instance.getParticipantName(lowestTime);
 
@@ -56,6 +70,7 @@ class _ResultScreenState extends State<ResultScreen> {
       bestParticipantName = participantName;
     });
   }
+
 
 
   void fetchRounds() async {
@@ -136,8 +151,10 @@ class _ResultScreenState extends State<ResultScreen> {
                           setState(() {
                             selectedRound = value!;
                             applyFilter();
+                            fetchParticipants(); // Fetch participants for the selected round
                           });
                         },
+
                       ),
                     ],
                   ),
@@ -321,7 +338,7 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   void showExportDialog(BuildContext context) {
-    String tableName = ''; // Variable to store the table name entered by the user
+    String fileName = '';
 
     showDialog(
       context: context,
@@ -331,34 +348,90 @@ class _ResultScreenState extends State<ResultScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Select export format:'),
-              ElevatedButton(
-                onPressed: () {
-                  exportToCSV(tableName); // Pass the table name to the export method
-                  Navigator.pop(context); // Close the dialog
-                  showToast('Exported to CSV');
-                },
-                child: Text('Export to CSV'),
-              ),
-              SizedBox(height: 16.0),
-              Text('Enter file name:'), // Add label for the text input field
+              Text('Enter file name:'),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'File Name',
                 ),
                 onChanged: (value) {
                   setState(() {
-                    tableName = value;
+                    fileName = value;
                   });
                 },
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                exportToCSV(fileName);
+                Navigator.pop(context); // Close the dialog
+                showToast('Exported to CSV');
+              },
+              child: Text('Export'),
+            ),
+          ],
         );
       },
     );
   }
 
+  void exportToCSV(String fileName) async {
+    // Request storage permission
+    PermissionStatus status = await Permission.storage.request();
+
+    if (status.isGranted) {
+      // Retrieve the external storage directory
+      Directory? externalStorageDir = await getExternalStorageDirectory();
+
+      if (externalStorageDir != null) {
+        // Construct the file path
+        String downloadsPath = path.join(externalStorageDir.path, 'Download');
+        String filePath = path.join(downloadsPath, '$fileName.csv');
+
+        // Create the Download directory if it doesn't exist
+        Directory(downloadsPath).createSync(recursive: true);
+
+        // Open the file
+        File file = File(filePath);
+
+        // Convert the participant details to CSV format
+        String csvData = '';
+
+        for (var participant in filteredParticipants) {
+          String name = participant['name'] ?? '';
+          String attempt = participant['attempt'] ?? '';
+          String bestTime = participant['bestTime'] ?? '';
+
+          csvData += '$name,$attempt,$bestTime\n';
+        }
+
+        // Write the CSV data to the file
+        await file.writeAsString(csvData);
+
+        String fileLocation = file.path;
+        showToast('CSV file exported successfully');
+      } else {
+        showToast('Unable to access external storage');
+      }
+    } else {
+      showToastt('Storage permission denied');
+    }
+  }
+
+  void showToastt(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+    );
+  }
   void showExportDBDialog(BuildContext context) {
     String tableName = ''; // Variable to store the table name entered by the user
 
@@ -399,28 +472,42 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   void applyFilter() {
-    filteredParticipants = List.from(participants);
-    filteredParticipants.sort((a, b) {
+    // Filter participants based on the selected round
+    List<Map<String, dynamic>> filteredParticipantsByRound = participants
+        .where((participant) => participant['round'] == selectedRound)
+        .toList();
+
+    // Sort participants by the best time
+    filteredParticipantsByRound.sort((a, b) {
       final aTime = a['bestTime'] as String?;
       final bTime = b['bestTime'] as String?;
+
       if (aTime != null && bTime != null) {
-        if (filterAscending) {
-          return aTime.compareTo(bTime);
-        } else {
-          return bTime.compareTo(aTime);
-        }
+        return aTime.compareTo(bTime);
       } else {
         return 0;
       }
     });
-    if (selectedTop < filteredParticipants.length) {
-      filteredParticipants = filteredParticipants.sublist(0, selectedTop);
+
+    // Apply sorting order (ascending or descending)
+    if (!filterAscending) {
+      filteredParticipantsByRound = filteredParticipantsByRound.reversed.toList();
     }
+
+    // Limit the number of participants based on selectedTop
+    if (selectedTop < filteredParticipantsByRound.length) {
+      filteredParticipantsByRound = filteredParticipantsByRound.sublist(0, selectedTop);
+    }
+
+    setState(() {
+      filteredParticipants = filteredParticipantsByRound;
+    });
   }
 
-  void exportToCSV(String tableName) {
-    // Export logic to CSV
-  }
+
+  // void exportToCSV(String tableName) {
+  //   // Export logic to CSV
+  // }
 
   void exportToDB(String tableName) {
     // Export logic to DB
