@@ -46,189 +46,206 @@ class _JudgeScanState extends State<JudgeScan> {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              // Implement your logout logic here
-              // For example, you can navigate to the home screen
-
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Judge Name: John Doe',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Judge ID: J123456',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 24),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.yellow,
-                borderRadius: BorderRadius.circular(16.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Judge Name: John Doe',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Judge ID: J123456',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.yellow,
+                    borderRadius: BorderRadius.circular(16.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Participant Details',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 7),
-                  Text(
-                    'Participant Name: $participantName',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 1),
-                  // Text(
-                  //   'Participant ID: $participantID',
-                  //   style: TextStyle(fontSize: 16),
-                  // ),
-                  SizedBox(height: 1),
-                  Text(
-                    'Round Name: ${widget.roundName}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 1),
-                  // Text(
-                  //   '${widget.attemptNowOpen}',
-                  //   style: TextStyle(fontSize: 16),
-                  // )
-                  // SizedBox(height: 1),
-                  Row(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Attempt : ${widget.attemptNowOpen}',
+                        'Participant Details',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 7),
+                      Text(
+                        'Participant Name: $participantName',
                         style: TextStyle(fontSize: 16),
-                      )],
-                  ),
-                  SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(Icons.timer, size: 40), // Increase icon size
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          controller: timeController,
-                          decoration: InputDecoration(
-                            labelText: 'Time',
-                          ),
-                          keyboardType: TextInputType.datetime,
-                          style: TextStyle(fontSize: 30),
-                          onChanged: (value) {
-                            setState(() {
-                              enteredTime = value;
-                            });
-                          },
-                          inputFormatters: [
-                            _TimeInputFormatter(),
-                          ],
-                        ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 18),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            enteredTime = incrementTimeByOneSecond(enteredTime);
-                            timeController.text = enteredTime;
-                          });
-                        },
-                        child: Text('+1'),
+                      SizedBox(height: 1),
+                      Text(
+                        'Round Name: ${widget.roundName}',
+                        style: TextStyle(fontSize: 16),
                       ),
-                      SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            enteredTime = 'DNF';
-                            timeController.text = enteredTime;
-                          });
-                        },
-                        child: Text('DNF'),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.qr_code, size: 32), // Increase icon size
-                      SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          _startScan();
-                        },
-                        child: Text(
-                          'Scan QR Code',
-                          style: TextStyle(
-                            fontSize: 16,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  if (isScanning)
-                    SizedBox(
-                      height: 200,
-                      child: Stack(
+                      SizedBox(height: 1),
+                      Row(
                         children: [
-                          QRView(
-                            key: qrKey,
-                            onQRViewCreated: _onQRViewCreated,
+                          Text(
+                            'Attempt: ${widget.attemptNowOpen}',
+                            style: TextStyle(fontSize: 16),
                           ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              width: 180,
-                              height: 180,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.red,
-                                  width: 2.0,
-                                ),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.timer, size: 40),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: timeController,
+                              decoration: InputDecoration(
+                                labelText: 'Time',
+                              ),
+                              keyboardType: TextInputType.datetime,
+                              style: TextStyle(fontSize: 30),
+                              onChanged: (value) {
+                                setState(() {
+                                  enteredTime = value;
+                                });
+                              },
+                              inputFormatters: [
+                                _TimeInputFormatter(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 18),
+                      Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                enteredTime = incrementTimeByOneSecond(enteredTime);
+                                timeController.text = enteredTime;
+                              });
+                            },
+                            child: Text('+1'),
+                          ),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                enteredTime = 'DNF';
+                                timeController.text = enteredTime;
+                              });
+                            },
+                            child: Text('DNF'),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.qr_code, size: 32),
+                          SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              _startScan();
+                            },
+                            child: Text(
+                              'Scan QR Code',
+                              style: TextStyle(
+                                fontSize: 16,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
                         ],
                       ),
+                      SizedBox(height: 16),
+                      if (isScanning)
+                        SizedBox(
+                          height: 200,
+                          child: Stack(
+                            children: [
+                              QRView(
+                                key: qrKey,
+                                onQRViewCreated: _onQRViewCreated,
+                              ),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width: 180,
+                                  height: 180,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.red,
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Participant ID',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            participantID = value;
+                          });
+                        },
+                      ),
                     ),
-                ],
-              ),
+                    SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Implement the search logic here
+                        // You can access the participant ID using the participantID variable
+                      },
+                      child: Text('Search'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    _showConfirmationDialog();
+                  },
+                  child: Text('Submit'),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                _showConfirmationDialog();
-              },
-              child: Text('Submit'),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+
 
   void _startScan() {
     setState(() {
@@ -246,12 +263,10 @@ class _JudgeScanState extends State<JudgeScan> {
 
       // Check if participant name exists in the database
       final participant = await DatabaseHelper.instance.getParticipantByName(scanData.code!);
-
       if (participant != null) {
         setState(() {
           participantName = participant['name'];
           participantID = participant['id'];
-
         });
       } else {
         Fluttertoast.showToast(

@@ -47,6 +47,8 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
         'judge': selectedJudge,
         'previousQualified': selectedPreviousQualified,
         'ageGroup': selectedAgeGroup,
+        'roundNowOpen': 'inactive',
+        'attemptNowOpen':'attempt1',
       };
 
       final roundId = await DatabaseRoundHelper.instance.insertRound(round);

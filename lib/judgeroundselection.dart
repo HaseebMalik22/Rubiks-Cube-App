@@ -73,101 +73,104 @@ class _JudgeRoundSelectionScreenState
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          SizedBox(height: 0.0),
-          Image.asset(
-            'assets/images/logorubiks-01.png',
-            width: 300.0,
-            height: 300.0,
-          ),
-          SizedBox(height: 0.0),
-          Column(
-            children: <Widget>[
-              Text(
-                'Haseeb Malik',
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(height: 0.0),
+            Image.asset(
+              'assets/images/logorubiks-01.png',
+              width: 300.0,
+              height: 300.0,
+            ),
+            SizedBox(height: 0.0),
+            Column(
+              children: <Widget>[
+                Text(
+                  'Haseeb Malik',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                'J126773',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 15.0),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.0),
-            decoration: BoxDecoration(
-              color: Colors.yellow,
-              borderRadius: BorderRadius.circular(14.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  offset: Offset(0, 3),
-                  blurRadius: 6.0,
+                Text(
+                  'J126773',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    '                             Rounds',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
+            SizedBox(height: 15.0),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.0),
+              decoration: BoxDecoration(
+                color: Colors.yellow,
+                borderRadius: BorderRadius.circular(14.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    offset: Offset(0, 3),
+                    blurRadius: 6.0,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text(
+                      '                             Rounds',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                for (String round in rounds)
-                  FutureBuilder<String?>(
-                    future: getAttemptNowOpen(round),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else {
-                        String? attemptNowOpen = snapshot.data;
-                        return RoundButton(
-                          roundNumber: round,
-                          roundName: round,
-                          attemptNowOpen: attemptNowOpen,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => JudgeScan(
-                                  roundName: round,
-                                  attemptNowOpen: attemptNowOpen,
+                  for (String round in rounds)
+                    FutureBuilder<String?>(
+                      future: getAttemptNowOpen(round),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          String? attemptNowOpen = snapshot.data;
+                          return RoundButton(
+                            roundNumber: round,
+                            roundName: round,
+                            attemptNowOpen: attemptNowOpen,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      JudgeScan(
+                                        roundName: round,
+                                        attemptNowOpen: attemptNowOpen,
+                                      ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    },
-                  ),
-              ],
+                              );
+                            },
+                          );
+                        }
+                      },
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class RoundButton extends StatelessWidget {
+  class RoundButton extends StatelessWidget {
   final String roundNumber;
   final String roundName;
   final String? attemptNowOpen;
