@@ -49,8 +49,7 @@ class DatabaseRoundHelper {
     );
   }
 
-  Future<void> updateAttemptState(
-      String roundName, int attemptIndex) async {
+  Future<void> updateAttemptState(String roundName, int attemptIndex) async {
     final db = await instance.database;
     final currentAttemptState = _getAttemptState(attemptIndex);
     await db.rawUpdate(
@@ -58,6 +57,7 @@ class DatabaseRoundHelper {
       [currentAttemptState, roundName],
     );
   }
+
 
   String _getAttemptState(int attemptIndex) {
     switch (attemptIndex) {

@@ -49,23 +49,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> fetchRoundsData() async {
     // Fetch rounds data from the database
-    List<Map<String, dynamic>> rounds = await DatabaseRoundHelper.instance
-        .getRounds();
-
-    // Print the fetched rounds and their names
-    for (var round in rounds) {
-      final roundName = round['roundName'];
-      if (roundName != null) {
-        print('Round: $roundName');
-      }
-    }
+    List<Map<String, dynamic>> rounds = await DatabaseRoundHelper.instance.getRounds();
 
     // Create round toggle states and attempt toggle states based on fetched data
     setState(() {
-      roundToggleStates =
-          List.generate(rounds.length, (index) => false);
-      attemptToggleStates =
-          List.generate(rounds.length, (_) => [false, false, false]);
+      roundToggleStates = List.generate(rounds.length, (index) {
+        String roundState = rounds[index]['roundNowOpen'];
+        return roundState == 'active';
+      });
+
+      attemptToggleStates = List.generate(rounds.length, (index) {
+        String attemptState = rounds[index]['attemptNowOpen'];
+        List<bool> attemptStatesList = [
+          attemptState == 'attempt1',
+          attemptState == 'attempt2',
+          attemptState == 'attempt3',
+        ];
+        return attemptStatesList;
+      });
     });
 
     // Store the round names from the database in a list
@@ -80,6 +81,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       this.roundNames = roundNames;
     });
   }
+
+
+
+
 
   void toggleRoundState(int index) {
     setState(() {

@@ -246,10 +246,12 @@ class _JudgeScanState extends State<JudgeScan> {
 
       // Check if participant name exists in the database
       final participant = await DatabaseHelper.instance.getParticipantByName(scanData.code!);
+
       if (participant != null) {
         setState(() {
           participantName = participant['name'];
           participantID = participant['id'];
+
         });
       } else {
         Fluttertoast.showToast(

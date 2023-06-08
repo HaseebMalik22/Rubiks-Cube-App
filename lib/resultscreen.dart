@@ -271,22 +271,22 @@ class _ResultScreenState extends State<ResultScreen> {
                   Text('Ascending'),
                 ],
               ),
-              Row(
-                children: [
-                  Radio(
-                    value: false,
-                    groupValue: filterAscending,
-                    onChanged: (value) {
-                      setState(() {
-                        filterAscending = value!;
-                        applyFilter();
-                        Navigator.pop(context); // Close the dialog
-                      });
-                    },
-                  ),
-                  Text('Descending'),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Radio(
+              //       value: false,
+              //       groupValue: filterAscending,
+              //       onChanged: (value) {
+              //         setState(() {
+              //           filterAscending = value!;
+              //           applyFilter();
+              //           Navigator.pop(context); // Close the dialog
+              //         });
+              //       },
+              //     ),
+              //     Text('Descending'),
+              //   ],
+              // ),
             ],
           ),
         );
@@ -452,18 +452,18 @@ class _ResultScreenState extends State<ResultScreen> {
                 },
                 child: Text('Export to DB'),
               ),
-              SizedBox(height: 16.0),
-              Text('Enter table name:'), // Add label for the text input field
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Table Name',
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    tableName = value;
-                  });
-                },
-              ),
+              // SizedBox(height: 16.0),
+              // Text('Enter table name:'), // Add label for the text input field
+              // TextField(
+              //   decoration: InputDecoration(
+              //     labelText: 'Table Name',
+              //   ),
+              //   onChanged: (value) {
+              //     setState(() {
+              //       tableName = value;
+              //     });
+              //   },
+              // ),
             ],
           ),
         );

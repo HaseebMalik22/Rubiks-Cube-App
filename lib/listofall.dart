@@ -1,7 +1,16 @@
+import 'dart:io';
+import 'package:universal_io/io.dart';
+
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
 import 'package:rubikscube/Homepage.dart';
 import 'package:rubikscube/database_helper.dart';
+import 'package:path/path.dart' as path;
+
 
 class Participant {
   final String id;
@@ -26,7 +35,8 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
   List<Participant> _participants = [];
 
   void _fetchParticipantsFromDatabase() async {
-    List<Map<String, dynamic>> participantsData = await DatabaseHelper.instance.getAllParticipants();
+    List<Map<String, dynamic>> participantsData = await DatabaseHelper.instance
+        .getAllParticipants();
     setState(() {
       _participants = participantsData.map((data) {
         return Participant(
@@ -46,7 +56,6 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
   }
 
 
-
   String _searchId = '';
   Participant? _searchResult;
 
@@ -54,12 +63,13 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
     setState(() {
       _searchResult = _participants.firstWhere(
             (participant) => participant.id == _searchId,
-        orElse: () => Participant(
-          id: '',
-          name: '',
-          email: '',
-          bestTime: '',
-        ),
+        orElse: () =>
+            Participant(
+              id: '',
+              name: '',
+              email: '',
+              bestTime: '',
+            ),
       );
     });
   }
@@ -113,7 +123,6 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
                   builder: (context) => Home(),
                 ),
               );
-
             },
           ),
         ],
@@ -191,6 +200,7 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    exportToCsv();
                     Fluttertoast.showToast(
                       msg: 'Data exported successfully',
                       toastLength: Toast.LENGTH_SHORT,
@@ -206,7 +216,65 @@ class _ListOfAllScreenState extends State<ListOfAllScreen> {
       ),
     );
   }
+
+
+  void exportToCsv() async {
+    PermissionStatus status = await Permission.storage.request();
+
+    if (status.isGranted) {
+      // Retrieve the external storage directory
+      Directory? externalStorageDir = await getExternalStorageDirectory();
+
+      if (externalStorageDir != null) {
+        // Construct the file path
+        String downloadsPath = path.join(externalStorageDir.path, 'Download');
+        String filePath = path.join(downloadsPath, 'participants.csv');
+
+        // Create the Download directory if it doesn't exist
+        Directory(downloadsPath).createSync(recursive: true);
+
+        // Open the file
+        File file = File(filePath);
+
+        // Convert the participant details to CSV format
+        String csvData = '';
+
+        for (var participant in _participants) {
+          String id = participant.id;
+          String name = participant.name;
+          String email = participant.email;
+          String bestTime = participant.bestTime;
+
+          csvData += '$id,$name,$email,$bestTime\n';
+        }
+
+        // Write the CSV data to the file
+        await file.writeAsString(csvData);
+
+        String fileLocation = file.path;
+        showToast('CSV file exported successfully');
+      } else {
+        showToast('Unable to access external storage');
+      }
+    } else {
+      showToast('Storage permission denied');
+    }
+  }
+
+  void showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+    );
+  }
 }
+
+
+
+
+
+
 
 void main() {
   runApp(MaterialApp(
