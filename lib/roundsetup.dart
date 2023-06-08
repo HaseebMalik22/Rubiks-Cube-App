@@ -17,7 +17,7 @@ class _RoundSetupScreenState extends State<RoundSetupScreen> {
   String matchName = '';
 
   List<String> previousQualifiedOptions = ['1', '2', '3'];
-  List<String> participantOptions = ['Select All', 'Participant 1', 'Participant 2', 'Participant 3'];
+  List<String> participantOptions = ['Select All', 'Qualified participants'];
   List<String> judgeOptions = ['Select All', 'Judge 1', 'Judge 2', 'Judge 3'];
   List<String> ageGroupOptions = ['8-12', '13-16', 'All age group'];
 
