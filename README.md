@@ -4,7 +4,7 @@ A new Flutter project.
 
 ## UI of App
 
-![WhatsApp Image 2023-06-07 at 6 12 37 PM](https://github.com/HaseebMalik22/Rubiks-Cube-App/assets/97584342/6048494d-61a9-4fee-8f76-7b9fabdafa41)
+(https://github.com/HaseebMalik22/Rubiks-Cube-App/assets/97584342/6048494d-61a9-4fee-8f76-7b9fabdafa41)
 
 
 ![WhatsApp Image 2023-06-07 at 6 12 37 PM (1)](https://github.com/HaseebMalik22/Rubiks-Cube-App/assets/97584342/0dce736e-3366-4d65-a7d7-690259dbcca5)
