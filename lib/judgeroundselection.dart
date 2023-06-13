@@ -80,7 +80,7 @@ class _JudgeRoundSelectionScreenState
             SizedBox(height: 0.0),
             Image.asset(
               'assets/images/logorubiks-01.png',
-              width: 300.0,
+              width: 400.0,
               height: 300.0,
             ),
             SizedBox(height: 0.0),

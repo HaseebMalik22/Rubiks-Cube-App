@@ -149,7 +149,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               style: TextStyle(color: Colors.white),
             ),
             style: ElevatedButton.styleFrom(
-              primary: Colors.yellow,
+              primary: Colors.amber,
               onPrimary: Colors.black,
               textStyle: const TextStyle(fontSize: 18.0),
               padding: const EdgeInsets.symmetric(vertical: 15.0),

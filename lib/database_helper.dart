@@ -90,6 +90,18 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first : null;
   }
 
+  // Future<Map<String, dynamic>?> getParticipantByTime(String participantTime) async {
+  //   final db = await database;
+  //   final result = await db.query(
+  //     'participants',
+  //     where: 'time = ?',
+  //     whereArgs: [participantTime],
+  //     limit: 1,
+  //   );
+  //
+  //   return result.isNotEmpty ? result.first : null;
+  // }
+
 
   Future<List<Map<String, dynamic>>> getAllParticipants() async {
     final db = await database;
