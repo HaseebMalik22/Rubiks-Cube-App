@@ -1,6 +1,6 @@
 # rubikscube
 
-A new Flutter project.
+A new Flutter project for managing results of Rubik's Cube Competition.
 
 ## UI of App
 
