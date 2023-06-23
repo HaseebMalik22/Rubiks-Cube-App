@@ -189,9 +189,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          showExportDBDialog(context); // Show the export dialog
+                          showAverageParticipantDialog(context); // Show the export dialog
                         },
-                        child: Text('Export to DB'),
+                        child: Text('Get Average'),
                       ),
                     ],
                   ),
@@ -432,44 +432,57 @@ class _ResultScreenState extends State<ResultScreen> {
       gravity: ToastGravity.BOTTOM,
     );
   }
-  void showExportDBDialog(BuildContext context) {
-    String tableName = ''; // Variable to store the table name entered by the user
+
+
+  void showAverageParticipantDialog(BuildContext context) {
+    String participantID = '';
+    String participantName = '';
+    String averageTime = '';
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Export Participants'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Select export format:'),
-              ElevatedButton(
-                onPressed: () {
-                  exportToDB(tableName); // Pass the table name to the export method
-                  Navigator.pop(context); // Close the dialog
-                  showToast('Exported to DB');
-                },
-                child: Text('Export to DB'),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Average of Participant'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Enter participant ID',
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        participantID = value;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final helper = TimeRecordHelper();
+                      participantName = await helper.getParticipantName(int.parse(participantID)) ?? '';
+                      averageTime = (await helper.getAverageTimeForParticipant((participantName)) ?? '');
+
+                      setState(() {}); // Update the dialog with new values
+                    },
+                    child: Text('Get Average'),
+                  ),
+                  SizedBox(height: 16.0),
+                  Text('Participant Name: $participantName'),
+                  Text('Average Time: $averageTime'),
+                ],
               ),
-              // SizedBox(height: 16.0),
-              // Text('Enter table name:'), // Add label for the text input field
-              // TextField(
-              //   decoration: InputDecoration(
-              //     labelText: 'Table Name',
-              //   ),
-              //   onChanged: (value) {
-              //     setState(() {
-              //       tableName = value;
-              //     });
-              //   },
-              // ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
+
 
   void applyFilter() {
     // Filter participants based on the selected round

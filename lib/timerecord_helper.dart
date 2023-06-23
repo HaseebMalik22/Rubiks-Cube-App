@@ -96,6 +96,73 @@ class TimeRecordHelper {
     });
   }
 
+  Future<String?> getParticipantName(int participantID) async {
+    final db = await _database();
+    final List<Map<String, dynamic>> result = await db.query(
+      tableName,
+      columns: [columnParticipantName],
+      where: '$columnId = ?',
+      whereArgs: [participantID],
+    );
+    if (result.isNotEmpty) {
+      return result.first[columnParticipantName];
+    }
+    return null;
+  }
+
+  Future<String?> getAverageTimeForParticipant(String participantName) async {
+    final db = await _database();
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+    SELECT $columnTime
+    FROM $tableName
+    WHERE $columnParticipantName LIKE '%${participantName.toLowerCase()}%'
+  ''');
+
+    if (result.isNotEmpty) {
+      List<int> minutesList = [];
+      List<int> secondsList = [];
+      List<int> millisecondsList = [];
+
+      for (Map<String, dynamic> record in result) {
+        final timeString = record[columnTime];
+        final timeComponents = timeString.split(':');
+        final minutes = int.parse(timeComponents[0]);
+        final seconds = int.parse(timeComponents[1]);
+        final milliseconds = int.parse(timeComponents[2]);
+
+        minutesList.add(minutes);
+        secondsList.add(seconds);
+        millisecondsList.add(milliseconds);
+      }
+
+      if (minutesList.isNotEmpty) {
+        minutesList.sort();
+        secondsList.sort();
+        millisecondsList.sort();
+
+        minutesList.removeAt(0);
+        secondsList.removeAt(0);
+        millisecondsList.removeAt(0);
+
+        int averageMinutes = minutesList.reduce((a, b) => a + b) ~/ minutesList.length;
+        int averageSeconds = secondsList.reduce((a, b) => a + b) ~/ secondsList.length;
+        int averageMilliseconds = millisecondsList.reduce((a, b) => a + b) ~/ millisecondsList.length;
+
+        return '${averageMinutes.toString().padLeft(2, '0')}:${averageSeconds.toString().padLeft(2, '0')}:${averageMilliseconds.toString().padLeft(3, '0')}';
+      }
+    }
+    return null;
+  }
+
+
+
+
+
+
+
+
+
+
   Future<void> updateTimeRecord(int? id, String time) async {
     final db = await _database();
     await db.update(
@@ -105,5 +172,4 @@ class TimeRecordHelper {
       whereArgs: [id],
     );
   }
-
 }
