@@ -9,14 +9,14 @@ class RoundSetupScreen extends StatefulWidget {
 }
 
 class _RoundSetupScreenState extends State<RoundSetupScreen> {
-  String selectedPreviousQualified = '1';
+  String selectedPreviousQualified = '5';
   String selectedParticipant = 'Select All';
   String selectedJudge = 'Select All';
   String selectedAgeGroup = '8-12';
   String roundName = '';
   String matchName = '';
 
-  List<String> previousQualifiedOptions = ['1', '2', '3'];
+  List<String> previousQualifiedOptions = ['5'];
   List<String> participantOptions = ['Select All', 'Qualified participants'];
   List<String> judgeOptions = ['Select All', 'Judge 1', 'Judge 2', 'Judge 3'];
   List<String> ageGroupOptions = ['8-12', '13-16', 'All age group'];

@@ -62,11 +62,15 @@ class DatabaseRoundHelper {
   String _getAttemptState(int attemptIndex) {
     switch (attemptIndex) {
       case 0:
-        return 'attempt1';
+        return 'Attempt1';
       case 1:
-        return 'attempt2';
+        return 'Attempt2';
       case 2:
-        return 'attempt3';
+        return 'Attempt3';
+      case 3:
+        return 'Attempt4';
+      case 4:
+        return 'Attempt5';
       default:
         return 'none';
     }
@@ -104,6 +108,4 @@ class DatabaseRoundHelper {
   Future<Map<String, dynamic>?> getRoundData(String roundName) async {
     return await DatabaseRoundHelper.instance.getRoundByName(roundName);
   }
-
-
 }

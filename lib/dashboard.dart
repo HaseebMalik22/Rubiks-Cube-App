@@ -61,9 +61,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       attemptToggleStates = List.generate(rounds.length, (index) {
         String attemptState = rounds[index]['attemptNowOpen'];
         List<bool> attemptStatesList = [
-          attemptState == 'attempt1',
-          attemptState == 'attempt2',
-          attemptState == 'attempt3',
+          attemptState == 'Attempt1',
+          attemptState == 'Attempt2',
+          attemptState == 'Attempt3',
+          attemptState == 'Attempt4',
+          attemptState == 'Attempt5',
         ];
         return attemptStatesList;
       });
@@ -81,8 +83,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       this.roundNames = roundNames;
     });
   }
-
-
 
 
 
@@ -148,6 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/images/rubikscube.png'),
+                  opacity: 5,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -204,6 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           image: DecorationImage(
             image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
+            opacity: 32,
           ),
         ),
         child: Padding(
@@ -310,7 +312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(16.0), // Set border radius for curved corners
           color: Colors.yellow, // Set the background color to yellow
         ),
-        padding: EdgeInsets.all(16.0), // Add padding for spacing
+        padding: EdgeInsets.all(9.0), // Add padding for spacing
         child: Column(
           children: <Widget>[
             Text(
@@ -335,15 +337,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: <Widget>[
                   for (int i = 0; i < attemptToggleStates.length; i++)
                     Padding(
-                      padding: EdgeInsets.only(right: 10.0),
+                      padding: EdgeInsets.only(right: 2.0),
                       child: ElevatedButton(
                         onPressed: () => onAttemptToggle(i),
                         style: ElevatedButton.styleFrom(
                           primary: attemptToggleStates[i] ? Colors.green : Colors.red[400],
                           padding: EdgeInsets.symmetric(horizontal: 20.0),
                         ),
-                        child: Text('Attempt ${i + 1}'),
+                        child: Text('A${i + 1}'),
+
                       ),
+
                     ),
                 ],
               ),

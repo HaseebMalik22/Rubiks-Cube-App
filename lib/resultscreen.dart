@@ -464,7 +464,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     onPressed: () async {
                       final helper = TimeRecordHelper();
                       participantName = await helper.getParticipantName(int.parse(participantID)) ?? '';
-                      averageTime = (await helper.getAverageTimeForParticipant((participantName)) ?? '');
+                      averageTime = (await helper.getAverageTimeForParticipant(participantName)) ?? '';
 
                       setState(() {}); // Update the dialog with new values
                     },
@@ -473,6 +473,28 @@ class _ResultScreenState extends State<ResultScreen> {
                   SizedBox(height: 16.0),
                   Text('Participant Name: $participantName'),
                   Text('Average Time: $averageTime'),
+                  SizedBox(height: 16.0),
+                  if (participantName.isNotEmpty)
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: TimeRecordHelper().getParticipantTimes(participantName),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final records = snapshot.data!;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Attempts with Time:'),
+                              for (var record in records)
+                                Text('Attempt: ${record['attempt']}, Time: ${record['time']}'),
+                            ],
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error fetching attempts: ${snapshot.error}');
+                        } else {
+                          return CircularProgressIndicator();
+                        }
+                      },
+                    ),
                 ],
               ),
             );
@@ -481,6 +503,7 @@ class _ResultScreenState extends State<ResultScreen> {
       },
     );
   }
+
 
 
 

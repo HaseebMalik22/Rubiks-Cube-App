@@ -110,6 +110,34 @@ class TimeRecordHelper {
     return null;
   }
 
+
+  Future<List<Map<String, dynamic>>> getParticipantTimes(String participantName) async {
+    final db = await _database();
+    final List<Map<String, dynamic>> result = await db.query(
+      tableName,
+      columns: [columnAttempt, columnTime],
+      where: '$columnParticipantName LIKE ?', // Filter by participant name
+      whereArgs: ['%$participantName%'], // Use wildcard for partial matching
+    );
+
+    return result;
+  }
+
+
+  // Future<List<String>> getRounds() async {
+  //   final db = await _database();
+  //   final List<Map<String, dynamic>> result = await db.rawQuery('''
+  //     SELECT DISTINCT $columnRound
+  //     FROM $tableName
+  //   ''');
+  //
+  //   return result.map<String>((record) => record[columnRound]).toList();
+  // }
+
+
+
+
+
   Future<String?> getAverageTimeForParticipant(String participantName) async {
     final db = await _database();
     final List<Map<String, dynamic>> result = await db.rawQuery('''
@@ -135,14 +163,17 @@ class TimeRecordHelper {
         millisecondsList.add(milliseconds);
       }
 
-      if (minutesList.isNotEmpty) {
+      if (minutesList.length > 2) {
         minutesList.sort();
         secondsList.sort();
         millisecondsList.sort();
 
-        minutesList.removeAt(0);
+        minutesList.removeAt(0); // Remove the lowest time
+        minutesList.removeLast(); // Remove the highest time
         secondsList.removeAt(0);
+        secondsList.removeLast();
         millisecondsList.removeAt(0);
+        millisecondsList.removeLast();
 
         int averageMinutes = minutesList.reduce((a, b) => a + b) ~/ minutesList.length;
         int averageSeconds = secondsList.reduce((a, b) => a + b) ~/ secondsList.length;
@@ -153,11 +184,6 @@ class TimeRecordHelper {
     }
     return null;
   }
-
-
-
-
-
 
 
 
